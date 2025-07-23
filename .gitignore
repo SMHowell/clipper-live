@@ -1,3 +1,5 @@
+clipper-backend/SPICE/NAIF/
+clipper-backend/SPICE/Clipper/
 clipper-backend/SPICE/NaturalBodies/
 backend/node_modules/
 backend/__pycache__/
