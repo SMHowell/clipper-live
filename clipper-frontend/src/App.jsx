@@ -576,8 +576,14 @@ export default function App() {
               bodyStates={bodyStates}
             />
           </group>
-          <OrbitControls ref={controlsRef} enableRotate={false} enablePan={false} enableZoom />
-        </Canvas>
+          <OrbitControls
+            ref={controlsRef}
+            enableRotate={false}
+            enablePan={false}
+            enableZoom
+            maxDistance={STAR_DIST_SCALE-5}     // don’t go farther than 20 units
+          />
+          </Canvas>
       ) : (
         <div
           style={{
