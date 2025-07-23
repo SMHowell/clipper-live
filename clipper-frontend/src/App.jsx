@@ -434,6 +434,7 @@ export default function App() {
           flexDirection: "column",
           gap: "1rem",
           alignItems: "flex-start",
+              fontSize: "0.75rem"
         }}
       >
         <div
@@ -454,7 +455,6 @@ export default function App() {
               flexDirection: "row",
               alignItems: "center",
               gap: "0.2rem",
-              fontSize: "0.75rem"
             }}
           >
             {[
@@ -535,6 +535,7 @@ export default function App() {
             flexDirection: "column",
             gap: "0.5rem",
             width: "95%", // matches the date/encounter width
+            fontSize: "0.75rem"
           }}
         >
           <label htmlFor="encounter-select">Select Encounter</label>
