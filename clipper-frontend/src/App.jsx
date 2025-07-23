@@ -68,13 +68,19 @@ export default function App() {
   function handleEncounterSelect(enc) {
     if (!enc?.date) return;
 
-    // Parse the CSV time as UTC (append Z if needed)
-    const raw = enc.date.trim();
-    const dt  = new Date(raw.endsWith("Z") ? raw : raw + "Z");
+    try {
+      const raw = enc.date.trim();
+      const iso = raw.endsWith("Z") ? raw : raw + "Z";
+      const dt  = new Date(iso);
 
-    // Update our single UTC‐ISO `date` state;
-    // the input fields will re‐populate via the [date,useLocalTime] effect below.
-    setDate(dt.toISOString());
+      if (isNaN(dt.getTime())) {
+        throw new Error(`Invalid date string “${iso}”`);
+      }
+
+      setDate(dt.toISOString());
+    } catch (err) {
+      console.error("handleEncounterSelect failed:", err, enc);
+    }
   }
 
   function handleDateSubmit() {
@@ -377,6 +383,7 @@ export default function App() {
       style={{ height: "100vh", width: "100vw", overflow: "hidden" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
+      onDragStart={e => e.preventDefault()}
       onWheel={onWheel} // ← add this
       // no need for onPointerUp/onPointerLeave when using e.buttons
       onKeyDown={(e) => {

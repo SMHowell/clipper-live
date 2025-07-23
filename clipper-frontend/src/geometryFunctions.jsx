@@ -223,7 +223,17 @@ export function ClipperModel({ position, date, bodies, scPos, scQuat, saQuat }) 
       {/* ── BUS ── */}
       <group quaternion={scWorldQ}>
         <primitive object={scScene.clone()} />
-        {/*<primitive object={new THREE.AxesHelper(35.47)} />*/}
+        {vectorDefs.map(({label, target, color}) => {
+          if (!scVec || !target) return null;
+          const dir = target.clone().sub(scVec).normalize();
+          const length = 5;
+          return (
+            <primitive
+              key={label}
+              object={new THREE.ArrowHelper(dir, new THREE.Vector3( 0, 0, 0 ), length, color, 0.2 * length, 0.07 * length)}
+            />
+          );
+        })}
       </group>
 
       {/* ── ARRAYS ── */}
@@ -238,17 +248,7 @@ export function ClipperModel({ position, date, bodies, scPos, scQuat, saQuat }) 
         </group>
       </group>
 
-    {vectorDefs.map(({label, target, color}) => {
-      if (!scVec || !target) return null;
-      const dir = target.clone().sub(scVec).normalize();
-      const length = 5;
-      return (
-        <primitive
-          key={label}
-          object={new THREE.ArrowHelper(dir, scVec, length, color, 0.2 * length, 0.07 * length)}
-        />
-      );
-    })}
+
 
     </group>
   );
