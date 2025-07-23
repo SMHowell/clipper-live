@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useGLTF } from "@react-three/drei";
+import { useGLTF, Text } from "@react-three/drei";
 import * as THREE from 'three';
 
 // your own hooks / utils / constants:
@@ -48,7 +48,7 @@ function LODSphere({
 
   const texture = useMemo(() => {
     if (name === "Europa") {
-      return new THREE.TextureLoader().load('/EuropaColor.png');
+      return new THREE.TextureLoader().load('/EuropaColorTestFixed.png');
     } else if (name === "Earth") {
       return new THREE.TextureLoader().load('/Envisat_mosaic_May_-_November_2004.png');
     } else if (name === "Moon") {
@@ -167,6 +167,13 @@ export function BodySphere({ name, position, quaternion, color, levels, radiiKm 
         radiiKm={radiiKm}
         color={color}
         levels={levels}
+      />
+      <LatLonGrid
+        radiusAU={radiiKm[0] / KM_PER_AU}
+        spacing={15}
+        lineColor="gray"
+        labelColor="white"
+        labelSize={0.02}
       />
     </group>
   );
@@ -393,3 +400,97 @@ export function useOrbitTrack(date, duration = 24*60*60, step = 60*60) {
   return track;
 }
 
+export function LatLonGrid({
+  radiusAU,
+  spacing     = 15,       // degrees between lines
+  segments    = 64,       // subdivisions per circle
+  lineColor   = 'lightgray',
+  labelColor  = 'white',
+  labelSize   = 0.02,     // base size (multiplied by radiusAU)
+}) {
+  const grid = useMemo(() => {
+    const g = new THREE.Group()
+    const mat = new THREE.LineBasicMaterial({ color: lineColor })
+
+    // ── Parallels (constant latitude) ──
+    for (let lat = -90; lat <= 90; lat += spacing) {
+      const φ = THREE.MathUtils.degToRad(lat)
+      const y = Math.sin(φ) * radiusAU
+      const r = Math.cos(φ) * radiusAU
+      // circle in the XZ plane at height y:
+      const geom = new THREE.CircleGeometry(r, segments)
+      geom.deleteAttribute('normal')        // not needed
+      geom.deleteAttribute('uv')
+      geom.attributes.position.array.copyWithin( 0, 3 ) // shift ring out of center
+      const line = new THREE.LineLoop(geom, mat)
+      line.rotation.x = Math.PI / 2
+      line.position.y = y
+      g.add(line)
+    }
+
+    // ── Meridians (constant longitude) ──
+    for (let lon = 0; lon < 360; lon += spacing) {
+      const θ = THREE.MathUtils.degToRad(lon)
+      const points = []
+      for (let lat = -90; lat <= 90; lat += 1) {
+        const φ = THREE.MathUtils.degToRad(lat)
+        const x = radiusAU * Math.cos(φ) * Math.cos(θ)
+        const y = radiusAU * Math.sin(φ)
+        const z = radiusAU * Math.cos(φ) * Math.sin(θ)
+        points.push(new THREE.Vector3(x, y, z))
+      }
+      const geom = new THREE.BufferGeometry().setFromPoints(points)
+      g.add(new THREE.Line(geom, mat))
+    }
+
+    return g
+  }, [radiusAU, spacing, segments, lineColor])
+
+  return (
+    <group>
+      <primitive object={grid} />
+
+      {/* ── Longitude labels at equator ── */}
+      {Array.from({ length: 360 / spacing }, (_, i) => {
+        const lon = i * spacing
+        const θ   = THREE.MathUtils.degToRad(lon)
+        const x   = radiusAU * Math.cos(θ)
+        const z   = radiusAU * Math.sin(θ)
+        return (
+          <Text
+            key={`lon-${lon}`}
+            position={[ x, 0,  z ]}
+            rotation={[ 0, THREE.MathUtils.degToRad(-lon), 0 ]}
+            fontSize={labelSize * radiusAU}
+            color={labelColor}
+            anchorX="center"
+            anchorY="middle"
+          >
+            {lon}°
+          </Text>
+        )
+      })}
+
+      {/* ── Latitude labels on prime meridian ── */}
+      {Array.from({ length: 180 / spacing + 1 }, (_, j) => {
+        const lat = -90 + j * spacing
+        const φ   = THREE.MathUtils.degToRad(lat)
+        const y   = Math.sin(φ) * radiusAU
+        const r   = Math.cos(φ) * radiusAU
+        return (
+          <Text
+            key={`lat-${lat}`}
+            position={[ 0, y,  r ]}
+            rotation={[ THREE.MathUtils.degToRad(-lat), 0, 0 ]}
+            fontSize={labelSize * radiusAU}
+            color={labelColor}
+            anchorX="center"
+            anchorY="middle"
+          >
+            {lat}°
+          </Text>
+        )
+      })}
+    </group>
+  )
+}

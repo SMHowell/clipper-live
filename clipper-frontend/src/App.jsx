@@ -76,29 +76,29 @@ export default function App() {
     if (!enc?.date) return;
 
     let iso = enc.date;
-    const newDateIso = new Date(iso).toISOString();
-    setDate(newDateIso);
+     const newDateIso = new Date(iso).toISOString();
+     setDate(newDateIso);
 
-    // ── MANUALLY UPDATE ALL FIELDS ──
-    const dt = new Date(newDateIso);
-    if (useLocalTime) {
-      setYear(      dt.getFullYear().toString() );
-      setMonth(     pad(dt.getMonth()  + 1)      );
-      setDay(       pad(dt.getDate())             );
-      setHour(      pad(dt.getHours())            );
-      setMinute(    pad(dt.getMinutes())          ); 
-      setSecond(    pad(dt.getSeconds())          );
-      setFraction(  pad(dt.getMilliseconds(), 4)  );
-    } else {
-      setYear(      dt.getUTCFullYear().toString() );
-      setMonth(     pad(dt.getUTCMonth()  + 1)      );
-      setDay(       pad(dt.getUTCDate())             );
-      setHour(      pad(dt.getUTCHours())            );
-      setMinute(    pad(dt.getUTCMinutes())          );
-      setSecond(    pad(dt.getUTCSeconds())           );
-      setFraction(  pad(dt.getUTCMilliseconds(), 4)   );
+     // ── MANUALLY UPDATE ALL FIELDS ──
+     const dt = new Date(newDateIso);
+     if (useLocalTime) {
+       setYear(      dt.getFullYear().toString() );
+       setMonth(     pad(dt.getMonth()  + 1)      );
+       setDay(       pad(dt.getDate())             );
+       setHour(      pad(dt.getHours())            );
+       setMinute(    pad(dt.getMinutes())          );
+       setSecond(    pad(dt.getSeconds())          );
+       setFraction(  pad(dt.getMilliseconds(), 4)  );
+     } else {
+       setYear(      dt.getUTCFullYear().toString() );
+       setMonth(     pad(dt.getUTCMonth()  + 1)      );
+       setDay(       pad(dt.getUTCDate())             );
+       setHour(      pad(dt.getUTCHours())            );
+       setMinute(    pad(dt.getUTCMinutes())          );
+       setSecond(    pad(dt.getUTCSeconds())           );
+       setFraction(  pad(dt.getUTCMilliseconds(), 4)   );
     }
-}
+  }
 
   // fetch & parse CSV once
   useEffect(() => {
@@ -857,6 +857,15 @@ function Scene({ date, bodies, stars, scPos, trajectory, orbitLines, radiiKm, sc
       {/* Bodies */}
       {bodyMeshes}
 
+{/*      <SubJovianArrow
+        europaName="Europa"
+        jupiterName="Jupiter"
+        radiiMap={radiiKm}
+        bodies={bodies}
+        scPos={scPos}
+        color="lime"
+      />*/}
+
 {/*      <group position={earthPos}>
         <primitive object={new THREE.AxesHelper(1)} />
       </group>*/}
@@ -921,4 +930,65 @@ export function CollapsibleContainer({ children }) {
       {visible && children}
     </>
   );
+}
+
+export function SubJovianArrow({
+  europaName    = "Europa",
+  jupiterName   = "Jupiter",
+  radiiMap,                   // e.g. { Europa: [rEq, rPolar], Jupiter: [...] }
+  bodies, scPos,             // from your spice hooks
+  color        = "magenta",  // arrow color
+}) {
+  const { scene } = useThree();
+  const arrowRef = useRef();
+
+  // 1) Create the ArrowHelper once and add it to the scene
+  useEffect(() => {
+    const arrow = new THREE.ArrowHelper(
+      /* dir    */ new THREE.Vector3(1,0,0),
+      /* origin */ new THREE.Vector3(0,0,0),
+      /* length */ 1,
+      /* color  */ color
+    );
+    scene.add(arrow);
+    arrowRef.current = arrow;
+    return () => { scene.remove(arrow); };
+  }, [scene, color]);
+
+  // 2) Every frame, recompute the two surface points and update the arrow
+  useFrame(() => {
+    const arrow = arrowRef.current;
+    if (!arrow) return;
+
+    // world centers
+    const euroC = getWorldPos(europaName,   bodies, scPos);
+    const jupeC = getWorldPos(jupiterName,  bodies, scPos);
+    if (!euroC || !jupeC) return;
+
+    const vE = new THREE.Vector3(...euroC);
+    const vJ = new THREE.Vector3(...jupeC);
+
+    // direction Europa→Jupiter
+    const dirEJ = vJ.clone().sub(vE).normalize();
+    // subjovian point on Europa
+    const rE = radiiMap[europaName][0] / KM_PER_AU;
+    const subjovianPt = vE.clone().add(dirEJ.clone().multiplyScalar(rE));
+
+    // direction Jupiter→Europa
+    const dirJE = vE.clone().sub(vJ).normalize();
+    // sub-Europa point on Jupiter
+    const rJ = radiiMap[jupiterName][0] / KM_PER_AU;
+    const subEuropaPt = vJ.clone().add(dirJE.clone().multiplyScalar(rJ));
+
+    // vector between those two surface points
+    const arrowVec = subEuropaPt.clone().sub(subjovianPt);
+    const L = arrowVec.length();
+
+    // update the ArrowHelper
+    arrow.setDirection( arrowVec.clone().normalize() );
+    arrow.position.copy( subjovianPt );
+    arrow.setLength( L, /* headLength */ 0.1*L, /* headWidth */ 0.05*L );
+  });
+
+  return null;    // we did all the work in side-effects
 }
