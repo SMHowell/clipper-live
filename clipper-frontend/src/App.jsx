@@ -444,7 +444,7 @@ export default function App() {
             background: "rgba(30, 41, 100, 0.6)",
             borderRadius: "0.5rem",
             color: "white",
-            width: "100%",
+            width: "95%",
           }}
         >
           {/* ── Row of steppers & inputs ── */}
@@ -453,22 +453,17 @@ export default function App() {
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
-              gap: "0.5rem",
+              gap: "0.2rem",
+              fontSize: "0.75rem"
             }}
           >
             {[
               { unit: "year",   label: "YYYY", value: year,    set: setYear,   width: "4ch" },
-              { sep: "-" },
               { unit: "month",  label: "MM",   value: month,   set: setMonth,  width: "2ch" },
-              { sep: "-" },
               { unit: "day",    label: "DD",   value: day,     set: setDay,    width: "2ch" },
-              { sep: "T" },
               { unit: "hour",   label: "HH",   value: hour,    set: setHour,   width: "2ch" },
-              { sep: ":" },
               { unit: "minute", label: "MM",   value: minute,  set: setMinute, width: "2ch" },
-              { sep: ":" },
               { unit: "second", label: "SS",   value: second,  set: setSecond, width: "2ch" },
-              { sep: "." },
               { unit: "ms",     label: "ssss", value: fraction,set: setFraction,width: "4ch" },
             ].map((cell, i) =>
               cell.sep ? (
@@ -482,12 +477,12 @@ export default function App() {
                     <button
                       onClick={() => adjustDate(cell.unit, +1)}
                       className="text-white"
-                      style={{ padding: 0, lineHeight: 1, fontSize: "0.75rem" }}
+                      style={{ padding: 0, lineHeight: 1, fontSize: "2rem" }}
                     >+</button>
                     <button
                       onClick={() => adjustDate(cell.unit, -1)}
                       className="text-white"
-                      style={{ padding: 0, lineHeight: 1, fontSize: "0.75rem" }}
+                      style={{ padding: 0, lineHeight: 1, fontSize: "2rem" }}
                     >−</button>
                   </div>
                   {/* input */}
@@ -539,7 +534,7 @@ export default function App() {
             display: "flex",
             flexDirection: "column",
             gap: "0.5rem",
-            width: "100%", // matches the date/encounter width
+            width: "95%", // matches the date/encounter width
           }}
         >
           <label htmlFor="encounter-select">Select Encounter</label>
@@ -583,7 +578,7 @@ export default function App() {
             display: "flex",
             flexDirection: "column",
             gap: "0.5rem",
-            width: "100%", // matches the date/encounter width
+            width: "95%", // matches the date/encounter width
           }}
         >
           <label htmlFor="zoom-select" className="block mb-1">
@@ -647,7 +642,7 @@ export default function App() {
         <div
           style={{
             position: "absolute", top: 0, left: 0,
-            width: "100%", height: "100%",
+            width: "95%", height: "95%",
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "white", fontSize: "1.5rem",
             background: "rgba(0,0,0,0.5)"
