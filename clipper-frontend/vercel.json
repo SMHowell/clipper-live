@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/clipper-live",
+      "destination": "https://clipper-live.vercel.app"
+    },
+    {
+      "source": "/clipper-live/(.*)",
+      "destination": "https://clipper-live.vercel.app/$1"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "https://clipper-backend-dcgj.onrender.com/api/$1"
     }
