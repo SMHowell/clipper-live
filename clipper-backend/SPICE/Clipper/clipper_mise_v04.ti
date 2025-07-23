@@ -1,0 +1,299 @@
+KPL/IK
+
+
+Europa Clipper MISE Instrument Kernel
+==============================================================================
+
+   This instrument kernel (I-kernel) contains Field-Of-View (FOV) and
+   other geometric parameter definitions for the MISE instrument.
+
+
+Version and Date
+----------------------------------------------------------
+
+   Version 0.4 -- February 4, 2019 -- Boris Semenov, NAIF
+
+      Updated cross track KOZ size based on [4] (27.15 -> 27.5).
+
+   Version 0.3 -- February 26, 2018 -- Boris Semenov, NAIF
+
+      Added placeholder sections for various non-FOV parameters. 
+
+      Made a few minor updates to the comments.
+
+   Version 0.2 -- June 8, 2017 -- Boris Semenov, NAIF
+
+      Redefined EUROPAM_MISE_RAD1+Y/-159610, EUROPAM_MISE_RAD1+X/-159611,
+      EUROPAM_MISE_RAD2+Y/-159612, and EUROPAM_MISE_RAD2+X/-159613 FOVs
+      as a polygons to work around a limitation in GFTFOV.
+
+      Reformatted comments.
+
+   Version 0.1 -- October 8, 2015 -- Eric W. Ferguson, JPL
+
+      Initial version.
+
+
+References
+----------------------------------------------------------
+
+   1. ``Kernel Pool Required Reading''
+
+   2. ``C-kernel Required Reading''
+
+   3. Europa Instrument Fact Sheets:
+      https://europaems.jpl.nasa.gov/alfresco/mmsapp/mms.html#/workspaces/master/sites/europa/documents/_17_0_5_1_8af0285_1415240264808_136692_232061/views/MMS_1441753698362_0ceb59af-b3e0-42c0-b5f0-a2e120f07865
+
+   4. MISE MICD, 10414240_A_watermarked.pdf
+
+
+Contact Information
+----------------------------------------------------------
+
+   Eric W. Ferguson, JPL, (818)-634-1928, eric.w.ferguson@jpl.nasa.gov
+   Boris V. Semenov, JPL, (818)-354-8136, boris.semenov@jpl.nasa.gov
+
+
+Implementation Notes
+----------------------------------------------------------
+
+   This file is used by the SPICE system as follows: programs that make
+   use of this kernel must ``load'' the kernel, normally during
+   program initialization. The SPICE routine FURNSH loads a kernel file
+   into the pool as shown below.
+
+      CALL FURNSH ( 'frame_kernel_name; )    -- FORTRAN
+      furnsh_c ( "frame_kernel_name" );      -- C
+      cspice_furnsh, frame_kernel_name       -- IDL
+      cspice_furnsh( 'frame_kernel_name' )   -- MATLAB
+
+   Once the file has been loaded, the SPICE routine GETFOV (getfov_c in
+   C, cspice_getfov in IDL and MATLAB) can be used to retrieve FOV
+   parameters for a given instrument or structure.
+
+   This file was created and may be updated with a text editor or word
+   processor.
+
+
+Conventions for Specifying Data
+----------------------------------------------------------
+
+   All names referencing values in this I-kernel start with the
+   characters `INS' followed by the NAIF ID code for the particular
+   instrument detector or keep out zone:
+
+      EUROPAM_MISE_BASE          -159600
+      EUROPAM_MISE               -159601
+      EUROPAM_MISE_FOR           -159602
+      EUROPAM_MISE_GLOBAL        -159603
+      EUROPAM_MISE_KOZ           -159604
+      EUROPAM_MISE_RAD1+Y        -159610
+      EUROPAM_MISE_RAD1+X        -159611
+      EUROPAM_MISE_RAD2+Y        -159612
+      EUROPAM_MISE_RAD2+X        -159613
+
+   The remainder of the name is an underscore character followed by the
+   unique name of the data item. For example, the MISE boresight
+   direction is specified by:
+
+      INS-159601_BORESIGHT
+
+   The upper bound on the length of the name of any data item is 32
+   characters.
+
+   If the same item is included in more than one file, or if the same
+   item appears more than once within a single file, the latest value
+   supersedes any earlier values.
+
+
+Instrument Description
+----------------------------------------------------------
+
+   <TBD>
+
+
+Mounting Alignment
+----------------------------------------------------------
+
+   Refer to the latest version of the Europa Mission Frames Definition
+   Kernel (FK) for reference frame definitions and mounting alignment
+   information.
+
+
+Instrument Detector/Sensor Layout (if applicable)
+----------------------------------------------------------
+
+   <TBD>
+
+
+Instrument Pixel-to-3D Coordinate Mapping (if applicable)
+----------------------------------------------------------
+
+   <TBD>
+
+
+Instrument Detector/Sensor Parameters (if applicable)
+----------------------------------------------------------
+
+   <TBD>
+
+
+Instrument Optical Parameters (if applicable)
+----------------------------------------------------------
+
+   <TBD>
+
+
+Instrument Optical Distortion (if applicable)
+----------------------------------------------------------
+
+   <TBD>
+
+
+Instrument Filter Parameters (if applicable)
+----------------------------------------------------------
+
+   <TBD>
+
+
+MISE FOV Definitions
+----------------------------------------------------------
+
+   Description <TBD>.
+
+   \begindata
+
+      INS-159600_FOV_FRAME                 = 'EUROPAM_MISE_BASE'
+      INS-159600_FOV_SHAPE                 = 'RECTANGLE'
+      INS-159600_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159600_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159600_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159600_FOV_REF_ANGLE             = ( 0.007 )
+      INS-159600_FOV_CROSS_ANGLE           = ( 2.15 )
+      INS-159600_FOV_ANGLE_UNITS           = 'DEGREES'
+
+      INS-159601_FOV_FRAME                 = 'EUROPAM_MISE'
+      INS-159601_FOV_SHAPE                 = 'RECTANGLE'
+      INS-159601_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159601_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159601_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159601_FOV_REF_ANGLE             = ( 0.007 )
+      INS-159601_FOV_CROSS_ANGLE           = ( 2.15 )
+      INS-159601_FOV_ANGLE_UNITS           = 'DEGREES'
+
+      INS-159602_FOV_FRAME                 = 'EUROPAM_MISE_BASE'
+      INS-159602_FOV_SHAPE                 = 'RECTANGLE'
+      INS-159602_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159602_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159602_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159602_FOV_REF_ANGLE             = ( 30.0 )
+      INS-159602_FOV_CROSS_ANGLE           = ( 2.15 )
+      INS-159602_FOV_ANGLE_UNITS           = 'DEGREES'
+
+      INS-159603_FOV_FRAME                 = 'EUROPAM_MISE_BASE'
+      INS-159603_FOV_SHAPE                 = 'RECTANGLE'
+      INS-159603_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159603_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159603_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159603_FOV_REF_ANGLE             = ( 2.15 )
+      INS-159603_FOV_CROSS_ANGLE           = ( 2.15 )
+      INS-159603_FOV_ANGLE_UNITS           = 'DEGREES'
+
+   \begintext
+
+
+MISE Radiators (RAD):
+
+   The FOV values for the MISE radiators are place holders until a time
+   when the real values are provided. FOV = 2 Pi SR (obstructions to be
+   negotiated)
+
+   \begindata
+
+      INS-159610_FOV_FRAME                 = 'EUROPAM_MISE_RAD1'
+      INS-159610_FOV_SHAPE                 = 'POLYGON'
+      INS-159610_BORESIGHT                 = ( 0.0 0.0 1.0 )
+      INS-159610_FOV_BOUNDARY_CORNERS      = (
+
+                      0.999998476913  0.000000000000  0.001745328366
+                      0.707105704202  0.707105704202  0.001745328366
+                      0.000000000000  0.999998476913  0.001745328366
+                     -0.707105704202  0.707105704202  0.001745328366
+                     -0.999998476913  0.000000000000  0.001745328366
+                     -0.707105704202 -0.707105704202  0.001745328366
+                     -0.000000000000 -0.999998476913  0.001745328366
+                      0.707105704202 -0.707105704202  0.001745328366
+
+                                             )
+
+      INS-159611_FOV_FRAME                 = 'EUROPAM_MISE_RAD1'
+      INS-159611_FOV_SHAPE                 = 'POLYGON'
+      INS-159611_BORESIGHT                 = ( 1.0 0.0 0.0 )
+      INS-159611_FOV_BOUNDARY_CORNERS      = (
+
+                      0.001745328366  0.999998476913  0.000000000000
+                      0.001745328366  0.707105704202  0.707105704202
+                      0.001745328366  0.000000000000  0.999998476913
+                      0.001745328366 -0.707105704202  0.707105704202
+                      0.001745328366 -0.999998476913  0.000000000000
+                      0.001745328366 -0.707105704202 -0.707105704202
+                      0.001745328366 -0.000000000000 -0.999998476913
+                      0.001745328366  0.707105704202 -0.707105704202
+
+                                             )
+
+      INS-159612_FOV_FRAME                 = 'EUROPAM_MISE_RAD2'
+      INS-159612_FOV_SHAPE                 = 'POLYGON'
+      INS-159612_BORESIGHT                 = ( 0.0 0.0 1.0 )
+      INS-159612_FOV_BOUNDARY_CORNERS      = (
+
+                      0.999998476913  0.000000000000  0.001745328366
+                      0.707105704202  0.707105704202  0.001745328366
+                      0.000000000000  0.999998476913  0.001745328366
+                     -0.707105704202  0.707105704202  0.001745328366
+                     -0.999998476913  0.000000000000  0.001745328366
+                     -0.707105704202 -0.707105704202  0.001745328366
+                     -0.000000000000 -0.999998476913  0.001745328366
+                      0.707105704202 -0.707105704202  0.001745328366
+
+                                             )
+
+      INS-159613_FOV_FRAME                 = 'EUROPAM_MISE_RAD2'
+      INS-159613_FOV_SHAPE                 = 'POLYGON'
+      INS-159613_BORESIGHT                 = ( 1.0 0.0 0.0 )
+      INS-159613_FOV_BOUNDARY_CORNERS      = (
+
+                      0.001745328366  0.999998476913  0.000000000000
+                      0.001745328366  0.707105704202  0.707105704202
+                      0.001745328366  0.000000000000  0.999998476913
+                      0.001745328366 -0.707105704202  0.707105704202
+                      0.001745328366 -0.999998476913  0.000000000000
+                      0.001745328366 -0.707105704202 -0.707105704202
+                      0.001745328366 -0.000000000000 -0.999998476913
+                      0.001745328366  0.707105704202 -0.707105704202
+
+                                             )
+
+   \begintext
+
+
+MISE Keep-Out-Zone (KOZ) FOV Definitions
+----------------------------------------------------------
+
+   Based on [4], the keep out zone is 110 degrees along track by 
+   55 degrees cross track.
+
+   \begindata
+ 
+      INS-159604_FOV_FRAME                 = 'EUROPAM_MISE_BASE'
+      INS-159604_FOV_SHAPE                 = 'RECTANGLE'
+      INS-159604_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159604_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159604_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159604_FOV_REF_ANGLE             = ( 55.0 )
+      INS-159604_FOV_CROSS_ANGLE           = ( 27.5 )
+      INS-159604_FOV_ANGLE_UNITS           = 'DEGREES'
+ 
+   \begintext
+
+End of IK.

@@ -1,0 +1,190 @@
+KPL/IK
+
+
+Europa Clipper REASON Instrument Kernel
+==============================================================================
+
+   This instrument kernel (I-kernel) contains Field-Of-View (FOV) and
+   other geometric parameter definitions for the REASON instrument.
+
+
+Version and Date
+----------------------------------------------------------
+
+   Version 0.3 -- February 26, 2018 -- Boris Semenov, NAIF
+
+      Added placeholder sections for various non-FOV parameters. 
+
+      Minor updates to the comments.
+
+   Version 0.2 -- October 24, 2017 -- Boris Semenov, NAIF
+
+      Added FOVs for the six REASON sensors.
+
+      Reformatted comments.
+
+   Version 0.1 -- October 8, 2015 -- Eric W. Ferguson, JPL
+
+      Initial version.
+
+
+References
+----------------------------------------------------------
+
+   1. ``Kernel Pool Required Reading''
+
+   2. ``C-kernel Required Reading''
+
+   3. Europa_D-55714_3PCS_Volume_1_InitialRelease.pdf, October 2017
+
+
+Contact Information
+----------------------------------------------------------
+
+   Eric W. Ferguson, JPL, (818)-634-1928, eric.w.ferguson@jpl.nasa.gov
+   Boris V. Semenov, JPL, (818)-354-8136, boris.v.semenov@jpl.nasa.gov
+
+
+Implementation Notes
+----------------------------------------------------------
+
+   This file is used by the SPICE system as follows: programs that make
+   use of this kernel must ``load'' the kernel, normally during program
+   initialization. The SPICE routine FURNSH loads a kernel file into
+   the pool as shown below.
+
+      CALL FURNSH ( 'frame_kernel_name; )    -- FORTRAN
+      furnsh_c ( "frame_kernel_name" );      -- C
+      cspice_furnsh, frame_kernel_name       -- IDL
+      cspice_furnsh( 'frame_kernel_name' )   -- MATLAB
+
+   Once the file has been loaded, the SPICE routine GETFOV (getfov_c in
+   C, cspice_getfov in IDL and MATLAB) can be used to retrieve FOV
+   parameters for a given instrument or structure.
+
+   This file was created and may be updated with a text editor or word
+   processor.
+
+
+Conventions for Specifying Data
+----------------------------------------------------------
+
+   All names referencing values in this I-kernel start with the
+   characters `INS' followed by the NAIF ID code for the particular
+   instrument detector or keep out zone:
+
+      EUROPAM_REASON             -159800
+      EUROPAM_REASON_VHF+X_I     -159801
+      EUROPAM_REASON_VHF+X_O     -159802
+      EUROPAM_REASON_HF+X        -159803
+      EUROPAM_REASON_VHF-X_I     -159804
+      EUROPAM_REASON_VHF-X_O     -159805
+      EUROPAM_REASON_HF-X        -159806
+
+   The remainder of the name is an underscore character followed by the
+   unique name of the data item. For example, the REASON HF +X
+   boresight direction is specified by:
+
+      INS-159803_BORESIGHT
+
+   The upper bound on the length of the name of any data item is 32
+   characters.
+
+   If the same item is included in more than one file, or if the same
+   item appears more than once within a single file, the latest value
+   supersedes any earlier values.
+
+
+Instrument Description
+----------------------------------------------------------
+
+   <TBD>
+
+
+Mounting Alignment
+----------------------------------------------------------
+
+   Refer to the latest version of the Europa Mission Frames Definition
+   Kernel (FK) for reference frame definitions and mounting alignment
+   information.
+
+
+Instrument Timing Parameters (if applicable)
+----------------------------------------------------------
+
+   <TBD>
+
+
+Instrument Geometric Parameters (if applicable)
+----------------------------------------------------------
+
+   <TBD>
+
+
+REASON FOV Definitions
+----------------------------------------------------------
+
+   This section defines FOVs intended solely for testing REASON frames.
+
+   \begindata
+
+      INS-159800_FOV_FRAME                 = 'EUROPAM_REASON'
+      INS-159800_FOV_SHAPE                 = 'RECTANGLE'
+      INS-159800_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159800_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159800_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159800_FOV_REF_ANGLE             = ( 30.0 )
+      INS-159800_FOV_CROSS_ANGLE           = ( 30.0 )
+      INS-159800_FOV_ANGLE_UNITS           = 'DEGREES'
+
+      INS-159801_FOV_FRAME                 = 'EUROPAM_REASON_VHF+X_I'
+      INS-159801_FOV_SHAPE                 = 'CIRCLE'
+      INS-159801_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159801_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159801_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159801_FOV_REF_ANGLE             = ( 3.0 )
+      INS-159801_FOV_ANGLE_UNITS           = 'DEGREES'
+
+      INS-159802_FOV_FRAME                 = 'EUROPAM_REASON_VHF+X_O'
+      INS-159802_FOV_SHAPE                 = 'CIRCLE'
+      INS-159802_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159802_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159802_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159802_FOV_REF_ANGLE             = ( 3.0 )
+      INS-159802_FOV_ANGLE_UNITS           = 'DEGREES'
+
+      INS-159803_FOV_FRAME                 = 'EUROPAM_REASON_HF+X'
+      INS-159803_FOV_SHAPE                 = 'CIRCLE'
+      INS-159803_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159803_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159803_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159803_FOV_REF_ANGLE             = ( 3.0 )
+      INS-159803_FOV_ANGLE_UNITS           = 'DEGREES'
+
+      INS-159804_FOV_FRAME                 = 'EUROPAM_REASON_VHF-X_I'
+      INS-159804_FOV_SHAPE                 = 'CIRCLE'
+      INS-159804_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159804_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159804_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159804_FOV_REF_ANGLE             = ( 3.0 )
+      INS-159804_FOV_ANGLE_UNITS           = 'DEGREES'
+
+      INS-159805_FOV_FRAME                 = 'EUROPAM_REASON_VHF-X_O'
+      INS-159805_FOV_SHAPE                 = 'CIRCLE'
+      INS-159805_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159805_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159805_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159805_FOV_REF_ANGLE             = ( 3.0 )
+      INS-159805_FOV_ANGLE_UNITS           = 'DEGREES'
+
+      INS-159806_FOV_FRAME                 = 'EUROPAM_REASON_HF-X'
+      INS-159806_FOV_SHAPE                 = 'CIRCLE'
+      INS-159806_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+      INS-159806_FOV_CLASS_SPEC            = 'ANGLES'
+      INS-159806_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+      INS-159806_FOV_REF_ANGLE             = ( 3.0 )
+      INS-159806_FOV_ANGLE_UNITS           = 'DEGREES'
+
+   \begintext
+
+End of IK.
