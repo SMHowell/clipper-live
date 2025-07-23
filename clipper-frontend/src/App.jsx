@@ -791,9 +791,9 @@ function Scene({ date, bodies, stars, scPos, trajectory, orbitLines, radiiKm, sc
       {/* Bodies */}
       {bodyMeshes}
 
-      <group position={earthPos}>
+{/*      <group position={earthPos}>
         <primitive object={new THREE.AxesHelper(1)} />
-      </group>
+      </group>*/}
 
 
       {/*{europaTrack && <primitive object={europaTrack} />}*/}
