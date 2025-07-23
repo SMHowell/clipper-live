@@ -428,17 +428,18 @@ export default function App() {
     >
       {/* ────────────────────────────────────────────────────────── */}
       {/* Date & Time picker above Encounter selector */}
+      <CollapsibleContainer>
       <div
         style={{
           position: "absolute",
-          top: 10,
+          top: 70,
           left: 10,
           zIndex: 1,
           display: "inline-flex",
           flexDirection: "column",
           gap: "1rem",
           alignItems: "flex-start",
-              fontSize: "0.75rem"
+              fontSize: "0.9rem"
         }}
       >
         <div
@@ -472,21 +473,20 @@ export default function App() {
             ].map((cell, i) =>
               cell.sep ? (
                 <div key={i} style={{ width: `${cell.sep.length || 1}ch`, textAlign: "center" }}>
-                  <span className="text-white">{cell.sep}</span>
                 </div>
               ) : (
                 <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                   {/* steppers */}
-                  <div style={{ display: "flex", flexDirection: "column", marginBottom: 2 }}>
+                  <div style={{ display: "flex", flexDirection: "column", marginBottom: 5}}>
                     <button
                       onClick={() => adjustDate(cell.unit, +1)}
                       className="text-white"
-                      style={{ padding: 0, lineHeight: 1, fontSize: "2rem" }}
+                      style={{ padding: 0, lineHeight: "1.5rem", width: "1.5rem", fontSize: "1rem", backgroundColor: "rgba(71,85,105,0.8)", marginBottom: 5 }}
                     >+</button>
                     <button
                       onClick={() => adjustDate(cell.unit, -1)}
                       className="text-white"
-                      style={{ padding: 0, lineHeight: 1, fontSize: "2rem" }}
+                      style={{ padding: 0, lineHeight: "1.5rem", width: "1.5rem", fontSize: "1rem", backgroundColor: "rgba(71,85,105,0.8)" }}
                     >−</button>
                   </div>
                   {/* input */}
@@ -539,7 +539,7 @@ export default function App() {
             flexDirection: "column",
             gap: "0.5rem",
             width: "95%", // matches the date/encounter width
-            fontSize: "0.75rem"
+            fontSize: "0.9rem"
           }}
         >
           <label htmlFor="encounter-select">Select Encounter</label>
@@ -608,6 +608,8 @@ export default function App() {
           </select>
         </div>
       </div>
+
+        </CollapsibleContainer>
       {/* ────────────────────────────────────────────────────────── */}
 
       {isDataReady ? (
@@ -882,6 +884,43 @@ function Scene({ date, bodies, stars, scPos, trajectory, orbitLines, radiiKm, sc
         />
         {/*<axesHelper args={[0.05]} />*/}
       </group>
+    </>
+  );
+}
+
+
+export function CollapsibleContainer({ children }) {
+  const [visible, setVisible] = useState(true);
+
+  return (
+    <>
+      {/* the little toggle “bot” */}
+      <button
+        onClick={() => setVisible(v => !v)}
+        style={{
+          position: "absolute",
+          top: 10,
+          left: 10,
+          width: 40,
+          height: 40,
+          backgroundColor: "rgba(71,85,105,0.8)", // slate-600 at 80% opacity
+          border: "none",
+          borderRadius: 4,
+          color: "#fff",
+          fontSize: "1rem",
+          lineHeight: 1,
+          cursor: "pointer",
+          zIndex: 999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {visible ? "<" : ">"}
+      </button>
+
+      {/* your menu only renders when visible */}
+      {visible && children}
     </>
   );
 }
