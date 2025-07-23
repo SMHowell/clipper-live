@@ -1,0 +1,3 @@
+# always keep ours version of these files when merging
+clipper-frontend/vite.config.js merge=ours
+vercel.json              merge=ours
