@@ -67,7 +67,7 @@ export default function App() {
     scPos.length === 3 &&                // fetched
     bodies.every(b => Array.isArray(b.pos)); // each body has a pos
 
-  // unified handler
+  // unified enc sleect handler
   function handleEncSelect(e) {
     const code = e.target.value;
     setSelEnc(code);
@@ -76,9 +76,29 @@ export default function App() {
     if (!enc?.date) return;
 
     let iso = enc.date;
-    if (!iso.endsWith("Z")) iso = iso + "Z";
-    setDate(new Date(iso).toISOString());
-  }
+    const newDateIso = new Date(iso).toISOString();
+    setDate(newDateIso);
+
+    // ── MANUALLY UPDATE ALL FIELDS ──
+    const dt = new Date(newDateIso);
+    if (useLocalTime) {
+      setYear(      dt.getFullYear().toString() );
+      setMonth(     pad(dt.getMonth()  + 1)      );
+      setDay(       pad(dt.getDate())             );
+      setHour(      pad(dt.getHours())            );
+      setMinute(    pad(dt.getMinutes())          ); 
+      setSecond(    pad(dt.getSeconds())          );
+      setFraction(  pad(dt.getMilliseconds(), 4)  );
+    } else {
+      setYear(      dt.getUTCFullYear().toString() );
+      setMonth(     pad(dt.getUTCMonth()  + 1)      );
+      setDay(       pad(dt.getUTCDate())             );
+      setHour(      pad(dt.getUTCHours())            );
+      setMinute(    pad(dt.getUTCMinutes())          );
+      setSecond(    pad(dt.getUTCSeconds())           );
+      setFraction(  pad(dt.getUTCMilliseconds(), 4)   );
+    }
+}
 
   // fetch & parse CSV once
   useEffect(() => {
@@ -408,7 +428,7 @@ export default function App() {
       <div
         style={{
           position: "absolute",
-          top: 70,
+          top: 65,
           left: 10,
           zIndex: 1,
           display: "inline-flex",
@@ -510,7 +530,7 @@ export default function App() {
         {/* ─────── Encounter selector ─────── */}
         <div
           style={{
-            marginTop: 8,
+            marginTop: 0,
             padding: 8,
             background: "rgba(30, 41, 100, 0.6)",
             borderRadius: "0.5rem",
@@ -554,7 +574,7 @@ export default function App() {
         {/* ─────── Zoom selector ─────── */}
         <div
           style={{
-            marginTop: 8,
+            marginTop: 0,
             padding: 8,
             background: "rgba(30, 41, 100, 0.6)",
             borderRadius: "0.5rem",
