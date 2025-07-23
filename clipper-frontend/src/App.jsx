@@ -12,7 +12,6 @@ import * as THREE from "three";
 import Papa from "papaparse";
 
 // App functions 
-import { EncounterSelector } from './uiElements.jsx'
 import { BodySphere, ClipperModel } from './geometryFunctions.jsx';
 import OrbitLine from './geometryFunctions.jsx';
 import { getWorldPos } from "./getWorldPos.jsx";
@@ -48,12 +47,11 @@ export default function App() {
   const [minute, setMinute] = useState(pad(now.getUTCMinutes()));
   const [second, setSecond] = useState(pad(now.getUTCSeconds()));
   const [fraction, setFraction] = useState(pad(now.getUTCMilliseconds(), 4));
-  const [bodyStates, setBodyStates] = useState({});
+  const [bodyStates, setBodyStates] = useState({}); 
 
-
+  const [selectedEncounterCode, setSelEnc] = useState("");
   const [encounters, setEncounters] = useState([]);
-  const [selectedEnc, setSelectedEnc] = useState("");
-
+  
   // new state for zoom dropdown
   const [zoomTarget, setZoomTarget] = useState("");
   const controlsRef = useRef();
@@ -87,6 +85,35 @@ export default function App() {
     }
   }
 
+  // fetch & parse CSV once
+  useEffect(() => {
+    fetch("/encounters.csv")
+      .then(r => r.text())
+      .then(text => {
+        const lines = text.split("\n").filter(l => l.trim());
+        // drop header rows (assume first two lines)
+        const rows  = lines.slice(2);
+        const parsed = rows
+          .map(row => {
+            const [orbit, code, date] = row.split(",");
+            return { orbit: orbit.trim(), code: code.trim(), date: date.trim() };
+          })
+          .filter(e => e.code);
+        setEncounters(parsed);
+      })
+      .catch(console.error);
+  }, []);
+
+  // when selection changes, notify date exactly once
+  useEffect(() => {
+    if (!selectedEncounterCode) return;
+    const enc = encounters.find(e => e.code === selectedEncounterCode);
+    if (!enc?.date) return;
+    // normalize to ISO-Z
+    const iso = enc.date.endsWith("Z") ? enc.date : enc.date + "Z";
+    setDate(new Date(iso).toISOString());
+  }, [selectedEncounterCode, encounters]);
+
   function handleDateSubmit() {
     let dt;
     if (useLocalTime) {
@@ -118,21 +145,6 @@ export default function App() {
     setDate(dt.toISOString());
   }
 
-  useEffect(() => {
-    fetch("/encounters.csv")
-      .then(r => r.text())
-      .then(text => {
-        const lines     = text.split("\n").filter(l => l.trim());
-        const dataLines = lines.slice(2);
-        const parsed    = dataLines.map(row => {
-          const [orbit, code, date] = row.split(",");
-          return { orbit: orbit.trim(), code: code.trim(), date: date.trim() };
-        }).filter(e => e.code);
-        setEncounters(parsed);
-      })
-      .catch(console.error);
-  }, []);
-  
   function adjustDate(unit, delta) {
     // parse the master date (always stored as a Z-terminated ISO)
     const dt = new Date(date);
@@ -517,26 +529,13 @@ export default function App() {
         </div>
 
         {/* ─────── Encounter selector ─────── */}
-        <div style={{ width: "100%" }}>
-          <label htmlFor="enc-select" className="block mb-1 text-white">
-            Select Encounter
-          </label>
+        {/* ─────── Encounter selector ─────── */}
+        <div className="sidebar-section">
+          <label htmlFor="encounter-select">Select Encounter</label>
           <select
-            id="enc-select"
-            className="w-full bg-slate-600 text-white rounded-md p-2 mb-2"
-            value={selectedEnc}
-            onChange={e => {
-              const code = e.target.value;
-              setSelectedEnc(code);
-
-              const enc = encounters.find(c => c.code === code);
-              if (!enc?.date) return;
-
-              // normalize to Z-terminated ISO
-              const raw = enc.date.trim();
-              const iso = raw.endsWith("Z") ? raw : raw + "Z";
-              setDate(new Date(iso).toISOString());
-            }}
+            id="encounter-select"
+            value={selectedEncounterCode}
+            onChange={e => setSelEnc(e.target.value)}
           >
             <option value="" disabled>
               -- Select an encounter --
@@ -547,12 +546,16 @@ export default function App() {
               </option>
             ))}
           </select>
-
-          {selectedEnc && (() => {
-            const enc = encounters.find(c => c.code === selectedEnc);
+  
+          {selectedEncounterCode && (() => {
+            const enc = encounters.find(e => e.code === selectedEncounterCode);
+            // helper to turn “E” → “Europa targeted flyby”
+            const desc = enc.code === "JOI"
+              ? ENCOUNTER_MAP.JOI
+              : `${ENCOUNTER_MAP[enc.code.charAt(0)]} targeted flyby`;
             return (
-              <p className="text-white">
-                {enc.code} – {ENCOUNTER_MAP[enc.code.charAt(0)] || "Unknown"} targeted flyby – Orbit {enc.orbit}
+              <p>
+                {enc.code} – {desc} – Orbit {enc.orbit}
               </p>
             );
           })()}

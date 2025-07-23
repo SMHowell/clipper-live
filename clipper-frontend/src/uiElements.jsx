@@ -8,6 +8,43 @@ const ENCOUNTER_MAP = {
 };
 
 export function EncounterSelector({ onSelect }) {
+  const [encounters, setEncounters] = useState([]);
+  const [selected, setSelected] = useState("");
+
+  useEffect(() => {
+    fetch("/encounters.csv")
+      .then((res) => res.text())
+      .then((text) => {
+        const lines = text.split("\n").filter((line) => line.trim() !== "");
+        const dataLines = lines.slice(2);
+        const [header, ...rows] = dataLines;
+
+        const parsed = rows
+          .map((row) => {
+            const [orbit, code, date] = row.split(",");
+            return { orbit: orbit.trim(), code: code.trim(), date: date.trim() };
+          })
+          .filter((enc) => enc.code);
+
+        setEncounters(parsed);
+      })
+      .catch(console.error);
+  }, []);
+
+   // → whenever the user picks a new code, notify the parent
+  useEffect(() => {
+    if (!selected) return;
+    const enc = encounters.find(e => e.code === selected);
+    if (!enc) {
+      console.warn(`No encounter found for code ${selected}`);
+      return;
+    }
+    try {
+      onSelect(enc);
+    } catch (err) {
+      console.error("EncounterSelector.onSelect threw:", err);
+    }
+  }, [selected, encounters, onSelect]);
 
   const handleChange = (e) => {
     const code = e.target.value;
