@@ -57,6 +57,7 @@ export function EncounterSelector({ onSelect }) {
         className="w-full bg-slate-600 text-white rounded-md p-2 mb-4"
         value={selected}
         onChange={handleChange}
+        onBlur={handleChange}
       >
         <option value="" disabled>
           -- Select an encounter --
