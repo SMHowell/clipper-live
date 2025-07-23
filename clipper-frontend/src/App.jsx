@@ -37,10 +37,9 @@ export default function App() {
   const [trajectory, setTrajectory] = useState([]);
   const [orbitSamples, setOrbitSamples] = useState({});
   const [orbitElements, setOrbitElements] = useState({});
-  const [encounterResetKey, setEncounterResetKey] = useState(0);
   const now = new Date();
-  const pad = (n, len = 2) => String(n).padStart(len, "0");
-  const [radiiKm, setRadii] = useState({});
+  const pad = (n, len = 2) => String(n).padStart(len, "0")
+;  const [radiiKm, setRadii] = useState({});
 
   const [year, setYear] = useState(now.getUTCFullYear()); 
   const [month, setMonth] = useState(pad(now.getUTCMonth() + 1));
@@ -76,9 +75,6 @@ export default function App() {
     // Update our single UTC‐ISO `date` state;
     // the input fields will re‐populate via the [date,useLocalTime] effect below.
     setDate(dt.toISOString());
-
-    // Remount <EncounterSelector> so that its dropdown resets (optional)
-    setEncounterResetKey(k => k + 1);
   }
 
   function handleDateSubmit() {
@@ -105,6 +101,7 @@ export default function App() {
         Number(second),
         Number(fraction)
       ));
+      
     }
 
     // Store *always* as a Z‐terminated ISO for querying your APIs
@@ -508,7 +505,6 @@ export default function App() {
           }}
         >
           <EncounterSelector
-            key={encounterResetKey}
             onSelect={handleEncounterSelect}
           />
         </div>
