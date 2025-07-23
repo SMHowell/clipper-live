@@ -51,7 +51,7 @@ export default function App() {
 
   const [selectedEncounterCode, setSelEnc] = useState("");
   const [encounters, setEncounters] = useState([]);
-  
+
   // new state for zoom dropdown
   const [zoomTarget, setZoomTarget] = useState("");
   const controlsRef = useRef();
@@ -529,8 +529,19 @@ export default function App() {
         </div>
 
         {/* ─────── Encounter selector ─────── */}
-        {/* ─────── Encounter selector ─────── */}
-        <div className="sidebar-section">
+        <div
+          style={{
+            marginTop: 8,
+            padding: 8,
+            background: "rgba(30, 41, 100, 0.6)",
+            borderRadius: "0.5rem",
+            color: "white",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5rem",
+            width: "100%", // matches the date/encounter width
+          }}
+        >
           <label htmlFor="encounter-select">Select Encounter</label>
           <select
             id="encounter-select"
