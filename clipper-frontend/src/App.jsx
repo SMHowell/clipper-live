@@ -67,26 +67,17 @@ export default function App() {
     scPos.length === 3 &&                // fetched
     bodies.every(b => Array.isArray(b.pos)); // each body has a pos
 
-  function handleEncounterSelect(enc) {
-    if (!enc?.date) return;
-    try {
-      const raw = enc.date.trim();
-      const iso = raw.endsWith("Z") ? raw : raw + "Z";
-      const dt  = new Date(iso);
-      if (isNaN(dt.getTime())) {
-        throw new Error(`Invalid date string “${iso}”`);
-      }
-      setDate(dt.toISOString());
-    } catch (err) {
-      console.error("handleEncounterSelect failed:", err, enc);
-    }
-  }
-
-  function handleEncSelectTrigger(e) {
+  // unified handler
+  function handleEncSelect(e) {
     const code = e.target.value;
     setSelEnc(code);
+
     const enc = encounters.find(c => c.code === code);
-    handleEncounterSelect(enc);        // ← delegate to your old logic
+    if (!enc?.date) return;
+
+    let iso = enc.date;
+    if (!iso.endsWith("Z")) iso = iso + "Z";
+    setDate(new Date(iso).toISOString());
   }
 
   // fetch & parse CSV once
@@ -94,18 +85,13 @@ export default function App() {
     fetch("/encounters.csv")
       .then(r => r.text())
       .then(text => {
-        const lines = text.split("\n").filter(l => l.trim());
-        // drop header rows (assume first two lines)
-        const rows  = lines.slice(2);
-        const parsed = rows
-          .map(row => {
-            const [orbit, code, date] = row.split(",");
-            return { orbit: orbit.trim(), code: code.trim(), date: date.trim() };
-          })
-          .filter(e => e.code);
-        setEncounters(parsed);
-      })
-      .catch(console.error);
+        const rows  = text.split("\n").slice(2).filter(Boolean);
+        const items = rows.map(r => {
+          const [orbit, code, d] = r.split(",");
+          return { orbit: orbit.trim(), code: code.trim(), date: d.trim() };
+        });
+        setEncounters(items.filter(e => e.code));
+      });
   }, []);
 
   // when selection changes, notify date exactly once
@@ -547,35 +533,33 @@ export default function App() {
           }}
         >
           <label htmlFor="encounter-select">Select Encounter</label>
-          <select
-            id="encounter-select"
-            value={selectedEncounterCode}
-            onChange={handleEncSelectTrigger}
-            onInput={handleEncSelectTrigger}
-          >
-            <option value="" disabled>
-              -- Select an encounter --
-            </option>
-            {encounters.map(enc => (
-              <option key={enc.code} value={enc.code}>
-                {enc.code}
-              </option>
-            ))}
-          </select>
-  
-          {selectedEncounterCode && (() => {
-            const enc = encounters.find(e => e.code === selectedEncounterCode);
-            // helper to turn “E” → “Europa targeted flyby”
-            const desc = enc.code === "JOI"
-              ? ENCOUNTER_MAP.JOI
-              : `${ENCOUNTER_MAP[enc.code.charAt(0)]} targeted flyby`;
-            return (
-              <p>
-                {enc.code} – {desc} – Orbit {enc.orbit}
-              </p>
-            );
-          })()}
-        </div>
+            <select
+              id="encounter-select"
+              value={selectedEncounterCode}
+              onChange={handleEncSelect}
+              onInput={handleEncSelect}  // iOS immediate picker movement
+              onBlur={handleEncSelect}   // iOS picker dismissal
+            >
+              <option value="" disabled>-- Select an encounter --</option>
+              {encounters.map(enc => (
+                <option key={enc.code} value={enc.code}>
+                  {enc.code}
+                </option>
+              ))}
+            </select>
+
+            {selectedEncounterCode && (() => {
+              const enc = encounters.find(e => e.code === selectedEncounterCode);
+              const desc = enc.code === "JOI"
+                ? ENCOUNTER_MAP.JOI
+                : `${ENCOUNTER_MAP[enc.code.charAt(0)]} targeted flyby`;
+              return (
+                <p>
+                  {enc.code} – {desc} – Orbit {enc.orbit}
+                </p>
+              );
+            })()}
+          </div>
 
         {/* ─────── Zoom selector ─────── */}
         <div
