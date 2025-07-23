@@ -557,7 +557,7 @@ export default function App() {
           gl={{ 
             logarithmicDepthBuffer: true, 
             physicallyCorrectLights: true,
-            outputEncoding:       THREE.sRGBEncoding,
+            // outputEncoding:       THREE.sRGBEncoding,
             toneMapping:          THREE.ACESFilmicToneMapping,
             toneMappingExposure:  1.0,
           }}
