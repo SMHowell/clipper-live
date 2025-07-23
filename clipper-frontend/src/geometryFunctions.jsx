@@ -179,14 +179,14 @@ export function ClipperModel({ position, date, bodies, scPos, scQuat, saQuat }) 
 
   // Inside ClipperModel function body
   const scVec     = getWorldPos("Spacecraft", bodies, scPos);
-  const sunPos    = getWorldPos("Sun", bodies, scPos);
-  const earthPos  = getWorldPos("Earth", bodies, scPos);
-  const europaPos = getWorldPos("Europa", bodies, scPos);
+  const sunVec    = getWorldPos("Sun", bodies, scPos);
+  const earthVec  = getWorldPos("Earth", bodies, scPos);
+  const europaVec = getWorldPos("Europa", bodies, scPos);
 
   const vectorDefs = [
-    { label: "Europa", target: europaPos, color: "cyan"     },
-    { label: "Sun",    target: sunPos,    color: "yellow"   },
-    { label: "Earth",  target: earthPos,  color: "green" },
+    { label: "Europa", target: europaVec, color: "cyan"     },
+    { label: "Sun",    target: sunVec,    color: "yellow"   },
+    { label: "Earth",  target: earthVec,  color: "green" },
   ];
 
   // 3) build spacecraft → world quaternion
@@ -220,9 +220,6 @@ export function ClipperModel({ position, date, bodies, scPos, scQuat, saQuat }) 
 
   return (
     <group position={position} scale={[SCALE, SCALE, SCALE]}>
-      {/* ── BUS ── */}
-      <group quaternion={scWorldQ}>
-        <primitive object={scScene.clone()} />
         {vectorDefs.map(({label, target, color}) => {
           if (!scVec || !target) return null;
           const dir = target.clone().sub(scVec).normalize();
@@ -234,6 +231,9 @@ export function ClipperModel({ position, date, bodies, scPos, scQuat, saQuat }) 
             />
           );
         })}
+      {/* ── BUS ── */}
+      <group quaternion={scWorldQ}>
+        <primitive object={scScene.clone()} />
       </group>
 
       {/* ── ARRAYS ── */}
