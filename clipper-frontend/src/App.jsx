@@ -459,7 +459,7 @@ export default function App() {
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
-              gap: "0.2rem",
+              gap: "0.4rem",
             }}
           >
             {[
@@ -494,6 +494,10 @@ export default function App() {
                     type="text"
                     value={cell.value}
                     onChange={e => cell.set(e.target.value)}
+                    onFocus={e => e.target.select()}      // ← select all on focus
+                    onClick={e => e.target.select()}      // ← also select on click/tap
+                    onBlur={handleDateSubmit}
+                    onKeyPress={e => e.key === "Enter" && handleDateSubmit()}
                     maxLength={cell.label.length}
                     style={{ width: cell.width }}
                     className="bg-slate-600 text-white rounded p-1 text-center"
