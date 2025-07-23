@@ -31,6 +31,13 @@ export function EncounterSelector({ onSelect }) {
       .catch(console.error);
   }, []);
 
+   // → whenever the user picks a new code, notify the parent
+   useEffect(() => {
+     if (!selected) return;
+     const enc = encounters.find(e => e.code === selected);
+     if (enc && onSelect) onSelect(enc);
+   }, [selected, encounters, onSelect]);
+
   const handleChange = (e) => {
     const code = e.target.value;
     setSelected(code);
