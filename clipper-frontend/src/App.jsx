@@ -112,9 +112,6 @@ export default function App() {
 
     // Store *always* as a Z‐terminated ISO for querying your APIs
     setDate(dt.toISOString());
-
-    // Remount selector if you still want that behavior
-    setEncounterResetKey(k => k + 1);
   }
 
   function adjustDate(unit, delta) {
