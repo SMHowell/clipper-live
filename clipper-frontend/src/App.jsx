@@ -69,20 +69,24 @@ export default function App() {
 
   function handleEncounterSelect(enc) {
     if (!enc?.date) return;
-
     try {
       const raw = enc.date.trim();
       const iso = raw.endsWith("Z") ? raw : raw + "Z";
       const dt  = new Date(iso);
-
       if (isNaN(dt.getTime())) {
         throw new Error(`Invalid date string “${iso}”`);
       }
-
       setDate(dt.toISOString());
     } catch (err) {
       console.error("handleEncounterSelect failed:", err, enc);
     }
+  }
+
+  function handleEncSelectTrigger(e) {
+    const code = e.target.value;
+    setSelEnc(code);
+    const enc = encounters.find(c => c.code === code);
+    handleEncounterSelect(enc);        // ← delegate to your old logic
   }
 
   // fetch & parse CSV once
@@ -542,7 +546,8 @@ export default function App() {
           <select
             id="encounter-select"
             value={selectedEncounterCode}
-            onChange={e => setSelEnc(e.target.value)}
+            onChange={handleEncSelectTrigger}
+            onInput={handleEncSelectTrigger}
           >
             <option value="" disabled>
               -- Select an encounter --
