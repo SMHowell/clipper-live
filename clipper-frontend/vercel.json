@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://clipper-backend-dcgj.onrender.com/api/$1"
+    }
+  ]
+}
