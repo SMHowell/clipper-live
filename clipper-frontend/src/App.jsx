@@ -94,16 +94,6 @@ export default function App() {
       });
   }, []);
 
-  // when selection changes, notify date exactly once
-  useEffect(() => {
-    if (!selectedEncounterCode) return;
-    const enc = encounters.find(e => e.code === selectedEncounterCode);
-    if (!enc?.date) return;
-    // normalize to ISO-Z
-    const iso = enc.date.endsWith("Z") ? enc.date : enc.date + "Z";
-    setDate(new Date(iso).toISOString());
-  }, [selectedEncounterCode, encounters]);
-
   function handleDateSubmit() {
     let dt;
     if (useLocalTime) {
