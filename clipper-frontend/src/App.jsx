@@ -662,6 +662,7 @@ export default function App() {
       {/* ────────────────────────────────────────────────────────── */}
 
       <div className="view view-primary">
+        {isDataReady ? (
           <Canvas
             //shadows
             style={{ width: "100%", height: "100%", background: "black" }}
@@ -712,6 +713,18 @@ export default function App() {
               maxDistance={100}     // don’t go farther than 20 units
             />
             </Canvas>
+        ) : (
+          <div
+            style={{
+              position: "absolute", top: 0, left: 0,
+              width: "95%", height: "95%",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "white", fontSize: "1.5rem",
+              background: "rgba(0,0,0,0.5)"
+            }}
+          >
+            Loading orbital data…
+          </div>
         )}
       </div>
       <SecondaryView
@@ -1171,7 +1184,7 @@ function LockCamera({ target, scPos, scQuat = [0,0,0,1] }) {
 // 2) SecondaryView: identical scene, locked camera
 // ————————————
 function SecondaryView(props) {
-  const { bodies, scPos, scQuat, fov = 50  } = props;
+  const { bodies, scPos, scQuat, fov = 50, overlaySceneRef  } = props;
   const target = React.useMemo(() => {
     const europaPos = getWorldPos("Europa", bodies, scPos);
     return europaPos
@@ -1210,6 +1223,8 @@ function SecondaryView(props) {
       <MainScene {...props} />
       <CameraFOVUpdater fov={fov} />
       <InstrumentFOVsAtNearPlane fov={fov}/>
+      {overlaySceneRef.current && <primitive object={overlaySceneRef.current} />}
+
     </Canvas>
   );
 }

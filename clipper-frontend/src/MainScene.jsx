@@ -194,7 +194,7 @@ export default function MainScene({
   return (
     <>
       <EffectComposer>
-        <Bloom luminanceThreshold={0.1} height={300} />
+        <Bloom luminanceThreshold={2} height={300} />
       </EffectComposer>
 
       {/* Lights */}
