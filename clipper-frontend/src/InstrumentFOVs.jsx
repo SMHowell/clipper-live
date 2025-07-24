@@ -1,18 +1,7 @@
 import * as THREE from "three";
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useEffect } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import fovData from "./spice_fov_lookup.json";
-
-// Logical keys for primary instrument FOVs
-export const FOV_FRAME_MAP = {
-  EIS_NAC:    "EUROPAM_EIS_NAC",
-  EIS_WAC:    "EUROPAM_EIS_WAC",
-  ETHEMIS:    "EUROPAM_ETHEMIS",
-  UVS_AP:     "EUROPAM_UVS_AP",
-  UVS_SP:     "EUROPAM_UVS_SP",
-  REASON:     "EUROPAM_REASON",
-  MISE:       "EUROPAM_MISE",
-};
 
 export const INSTRUMENT_FOVS = [
   {
@@ -103,6 +92,17 @@ export const INSTRUMENT_FOVS = [
     rot_y: 0.16,
     color: "yellow",
   },
+  {
+    instrument: "REASON",
+    fov_x: 30,
+    fov_z: 30,
+    offset_x: 0.0,
+    offset_z: 0,
+    err_x: 0,
+    err_z: 0,
+    rot_y: 0,
+    color: "green",
+  },
 ];
 
 
@@ -126,9 +126,13 @@ function degToRad(deg) {
   return (deg * Math.PI) / 180;
 }
 
-export function InstrumentFOVsAtNearPlane() {
+export function InstrumentFOVsAtNearPlane(fov) {
   const { camera } = useThree();
   const groupRef = useRef();
+
+  useEffect(() => {
+    // Trigger redraw/recompute/etc here
+  }, [fov]);
 
   useFrame(() => {
     if (groupRef.current) {

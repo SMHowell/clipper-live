@@ -53,6 +53,7 @@ export default function App() {
   const [second, setSecond] = useState(pad(now.getUTCSeconds()));
   const [fraction, setFraction] = useState(pad(now.getUTCMilliseconds(), 4));
   const [bodyStates, setBodyStates] = useState({}); 
+  const [secondaryFOV, setSecondaryFOV] = useState(50);  // default value matching the current camera
 
   const [selectedEncounterCode, setSelEnc] = useState("");
   const [encounters, setEncounters] = useState([]);
@@ -625,7 +626,38 @@ export default function App() {
             <span className="ml-2">Geologic Maps</span>
           </label>
         </div>
+              {/* ─────── Secondary FOV Slider ─────── */}
+      <div
+        style={{
+          marginTop: 0,
+          padding: 8,
+          background: "rgba(30, 41, 100, 0.6)",
+          borderRadius: "0.5rem",
+          color: "white",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.5rem",
+          width: "95%",
+        }}
+      >
+        <label htmlFor="fov-slider" className="block mb-1">
+          Secondary View FOV: {secondaryFOV}°
+        </label>
+        <input
+          id="fov-slider"
+          type="range"
+          min={10}
+          max={120}
+          step={1}
+          value={secondaryFOV}
+          onChange={(e) => setSecondaryFOV(Number(e.target.value))}
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerMove={(e) => e.stopPropagation()}
+        />
       </div>
+      </div>
+
+
         </CollapsibleContainer>
       {/* ────────────────────────────────────────────────────────── */}
 
@@ -710,6 +742,7 @@ export default function App() {
         showGeoMaps={showGeoMaps}
         overlaySceneRef={overlaySceneRef}
         isPrimaryScene={false}
+        fov={secondaryFOV}
       />
 
 
@@ -1151,7 +1184,7 @@ function LockCamera({ target, scPos, scQuat = [0,0,0,1] }) {
 // 2) SecondaryView: identical scene, locked camera
 // ————————————
 function SecondaryView(props) {
-  const { bodies, scPos, scQuat } = props;
+  const { bodies, scPos, scQuat, fov = 50  } = props;
   const target = React.useMemo(() => {
     const europaPos = getWorldPos("Europa", bodies, scPos);
     return europaPos
@@ -1159,10 +1192,22 @@ function SecondaryView(props) {
       : new THREE.Vector3(0, 0, 0);
   }, [bodies, scPos]);
 
+  // 🔁 Update camera FOV reactively
+  function CameraFOVUpdater({ fov }) {
+    const { camera } = useThree();
+    useFrame(() => {
+      if (camera.fov !== fov) {
+        camera.fov = fov;
+        camera.updateProjectionMatrix();
+      }
+    });
+    return null;
+  }
+
   return (
     <Canvas
       className="view view-secondary"
-      camera={{ fov: 50, up: [0, 0, 1], near: 1e-14, far: 1e2, position: scPos }}
+      camera={{ fov, up: [0, 0, 1], near: 1e-14, far: 1e2, position: scPos }}
       //shadows
       style={{ background: "black" }}
       gl={{ 
@@ -1176,7 +1221,8 @@ function SecondaryView(props) {
       <LockCamera target={target} scPos={scPos} scQuat={scQuat} />
       {/* pass exactly the same scene-props you give MainScene in your primary view: */}
       <MainScene {...props} />
-      <InstrumentFOVsAtNearPlane />
+      <CameraFOVUpdater fov={fov} />
+      <InstrumentFOVsAtNearPlane fov={fov}/>
     </Canvas>
   );
 }
