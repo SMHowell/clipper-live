@@ -33,23 +33,6 @@
     "cross_angle": 66.0,
     "angle_units": "DEGREES"
   },
-  "159200": {
-    "frame": "EUROPAM_ETHEMIS",
-    "shape": "RECTANGLE",
-    "boresight": [
-      0.0,
-      0.0,
-      1.0
-    ],
-    "ref_vector": [
-      1.0,
-      0.0,
-      0.0
-    ],
-    "ref_angle": 2.85,
-    "cross_angle": 2.1,
-    "angle_units": "DEGREES"
-  },
   "159210": {
     "frame": "EUROPAM_ETHEMIS",
     "shape": "RECTANGLE",

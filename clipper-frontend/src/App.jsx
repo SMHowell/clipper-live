@@ -1115,37 +1115,32 @@ function LockCamera({ target, scPos, scQuat = [0,0,0,1] }) {
   const _quat = React.useMemo(() => new THREE.Quaternion(), []);
 
   useFrame(() => {
-    // 1) move camera to spacecraft
     camera.position.copy(_pos);
 
-    // 2) keep +Z as “up”
-    camera.up.set(0, 0, 1);
-
-    // 3) decide whether we actually have a non-identity SPICE quaternion
     const [qx, qy, qz, qw] = scQuat;
     const isPointingAvail = !(qx === 0 && qy === 0 && qz === 0 && qw === 1);
 
     if (isPointingAvail) {
-      // — compute world† quaternion from SPICE—
-      //    SPICE gives you body→inertial as [x,y,z,w],
-      //    so we invert it to get inertial→body (i.e. SC-to-world).
-      _quat.set(qx, qy, qz, qw).invert();
+      _quat.set(qx, qy, qz, qw).invert(); // SC-to-world
 
-      // — apply that to the local +Y axis to get the SC’s nadir in world‐space
+      // — up vector is the SC's +Z axis in world frame (ram direction) —
+      const scZ = new THREE.Vector3(0, 0, 1).applyQuaternion(_quat);
+      camera.up.copy(scZ);
+
+      // — boresight is SC's +Y in world frame —
       _worldNadir.set(0, 1, 0).applyQuaternion(_quat);
 
-      // — look at the point (pos + nadirDir)
       camera.lookAt(
         camera.position.x + _worldNadir.x,
         camera.position.y + _worldNadir.y,
         camera.position.z + _worldNadir.z
       );
     } else {
-      // fallback: point at Europa
+      // fallback look at Europa
+      camera.up.set(0, 0, 1);
       camera.lookAt(target.x, target.y, target.z);
     }
 
-    // 4) push the change through
     camera.updateMatrixWorld();
   });
 
@@ -1167,7 +1162,7 @@ function SecondaryView(props) {
   return (
     <Canvas
       className="view view-secondary"
-      camera={{ fov: 50, up: [0, 0, 1], near: 1e-14, far: 1e2, position: [scPos] }}
+      camera={{ fov: 50, up: [0, 0, 1], near: 1e-14, far: 1e2, position: scPos }}
       //shadows
       style={{ background: "black" }}
       gl={{ 
@@ -1182,7 +1177,6 @@ function SecondaryView(props) {
       {/* pass exactly the same scene-props you give MainScene in your primary view: */}
       <MainScene {...props} />
       <InstrumentFOVsAtNearPlane />
-      
     </Canvas>
   );
 }

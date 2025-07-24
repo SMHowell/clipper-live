@@ -14,6 +14,98 @@ export const FOV_FRAME_MAP = {
   MISE:       "EUROPAM_MISE",
 };
 
+export const INSTRUMENT_FOVS = [
+  {
+    instrument: "EIS_NAC",
+    fov_x: 2.35,
+    fov_z: 1.17,
+    offset_x: 0.0,
+    offset_z: 0.0,
+    err_x: 0.0,
+    err_z: 0.0,
+    rot_y: 0.0,
+    color: "lightblue",
+  },
+  {
+    instrument: "EIS_WAC",
+    fov_x: 48.0,
+    fov_z: 24.0,
+    offset_x: 0.0,
+    offset_z: 0.0,
+    err_x: 0.2,
+    err_z: -0.2,
+    rot_y: 0.0,
+    color: "lightblue",
+  },
+  {
+    instrument: "MISE",
+    fov_x: 4.297,
+    fov_z: 0.007,
+    offset_x: 0.0,
+    offset_z: 0.0,
+    err_x: 0.0,
+    err_z: 0.0,
+    rot_y: 0.0,
+    color: "orange",
+  },
+  {
+    instrument: "UVS_SP_1",  // split views
+    fov_x: 7.3,
+    fov_z: 0.1,
+    offset_x: 0.0,
+    offset_z: 0.0,
+    err_x: -0.2,
+    err_z: 0.6,
+    rot_y: -0.2,
+    color: "red",
+  },
+  {
+    instrument: "UVS_SP_2",
+    fov_x: 0.2,
+    fov_z: 0.2,
+    offset_x: (7.3 + 0.2) / 2.0,
+    offset_z: 0.0,
+    err_x: -0.2,
+    err_z: 0.6,
+    rot_y: -0.2,
+    color: "red",
+  },
+  {
+    instrument: "ETHEMIS_1",
+    fov_x: 5.852,
+    fov_z: 0.9144,
+    offset_x: 0.0,
+    offset_z: -1.502,
+    err_x: 0.05,
+    err_z: -0.01,
+    rot_y: 0.16,
+    color: "yellow",
+  },
+  {
+    instrument: "ETHEMIS_2",
+    fov_x: 5.852,
+    fov_z: 0.9144,
+    offset_x: 0.0,
+    offset_z: 0.0,
+    err_x: 0.05,
+    err_z: -0.01,
+    rot_y: 0.16,
+    color: "yellow",
+  },
+  {
+    instrument: "ETHEMIS_3",
+    fov_x: 5.852,
+    fov_z: 0.9144,
+    offset_x: 0.0,
+    offset_z: 1.594,
+    err_x: 0.05,
+    err_z: -0.01,
+    rot_y: 0.16,
+    color: "yellow",
+  },
+];
+
+
 /**
  * Get the SPICE frame name for a given instrument key.
  * @param {string} key - One of the keys in FOV_FRAME_MAP.
@@ -37,9 +129,7 @@ function degToRad(deg) {
 export function InstrumentFOVsAtNearPlane() {
   const { camera } = useThree();
   const groupRef = useRef();
-  const frameNames = getAllFrameNames();
 
-  // 🧭 Point and place group where the camera is
   useFrame(() => {
     if (groupRef.current) {
       groupRef.current.position.copy(camera.position);
@@ -48,34 +138,42 @@ export function InstrumentFOVsAtNearPlane() {
   });
 
   const meshes = useMemo(() => {
-    const z = -1e-12; // distance in camera-local frame
-    const material = new THREE.LineBasicMaterial({ color: "lime" });
+    const z = -1e-12;
 
-    return Object.entries(fovData)
-      .filter(([_, fov]) => frameNames.includes(fov.frame))
-      .map(([id, fov]) => {
-        const θx = degToRad(fov.ref_angle);
-        const θy = degToRad(fov.cross_angle ?? fov.ref_angle);
+    return INSTRUMENT_FOVS.map((fov) => {
+      const θx = degToRad(fov.fov_x);
+      const θz = degToRad(fov.fov_z);
+      const halfWidth = Math.tan(θx / 2) * Math.abs(z);
+      const halfHeight = Math.tan(θz / 2) * Math.abs(z);
 
-        const hw = Math.tan(θx / 2) * Math.abs(z);
-        const hh = Math.tan(θy / 2) * Math.abs(z);
+      // apply offsets and errors
+      const dx = Math.tan(degToRad(fov.offset_x + fov.err_x)) * Math.abs(z);
+      const dz = Math.tan(degToRad(fov.offset_z + fov.err_z)) * Math.abs(z);
+      const rotY = degToRad(fov.rot_y);
 
-        const corners = [
-          new THREE.Vector3(-hw, -hh, z),
-          new THREE.Vector3( hw, -hh, z),
-          new THREE.Vector3( hw,  hh, z),
-          new THREE.Vector3(-hw,  hh, z),
-          new THREE.Vector3(-hw, -hh, z),
-        ].filter(v => v.toArray().every(Number.isFinite));
+      // corners around origin (z = -0.1)
+      const base = [
+        new THREE.Vector3(-halfWidth, -halfHeight, z),
+        new THREE.Vector3( halfWidth, -halfHeight, z),
+        new THREE.Vector3( halfWidth,  halfHeight, z),
+        new THREE.Vector3(-halfWidth,  halfHeight, z),
+        new THREE.Vector3(-halfWidth, -halfHeight, z),
+      ];
 
-        if (corners.length < 5) {
-          console.warn("Skipping bad FOV:", id);
-          return null;
-        }
-
-        const geometry = new THREE.BufferGeometry().setFromPoints(corners);
-        return <line key={id} geometry={geometry} material={material} />;
+      // rotate around Y
+      const rotated = base.map(p => {
+        const cos = Math.cos(rotY);
+        const sin = Math.sin(rotY);
+        const x = p.x * cos - p.z * sin;
+        const zNew = p.x * sin + p.z * cos;
+        return new THREE.Vector3(x + dx, p.y + dz, zNew);
       });
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(rotated);
+      const material = new THREE.LineBasicMaterial({ color: fov.color });
+
+      return <line key={fov.instrument} geometry={geometry} material={material} />;
+    });
   }, []);
 
   return <group ref={groupRef}>{meshes}</group>;
