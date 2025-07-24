@@ -530,7 +530,7 @@ export function LatLonGrid({
           labelLon = `${lon}°`
         } else {
           const disp = lon < 180 ? lon : 360 - lon
-          const hemi = lon < 180 ? 'E' : 'W'
+          const hemi = lon > 180 ? 'E' : 'W'
           labelLon    = `${disp}°${hemi}`
         }
 
