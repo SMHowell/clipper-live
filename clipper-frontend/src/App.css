@@ -19,7 +19,7 @@
 
 /* optional: if you ever want to tweak ordering */
 .view-primary  { order: 1; }
-.view-secondary{ order: 2; }
+.view-secondary{ order: 2; position: relative}
 
 /* Portrait: swap them top/bottom if you really want—but
    since we’re row-based, you could also leave this out: */

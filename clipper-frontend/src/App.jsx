@@ -18,6 +18,7 @@ import { BodySphere, ClipperModel, LatLonOverlay } from './geometryFunctions.jsx
 import OrbitLine from './geometryFunctions.jsx';
 import { getWorldPos } from "./getWorldPos.jsx";
 import MainScene from './MainScene';
+import {InstrumentFOVsAtNearPlane} from "./InstrumentFOVs";
 
 import {
   KM_PER_AU,
@@ -1102,26 +1103,49 @@ function MultiPassRenderer({ rendererRef, cameraRef, mainSceneRef, overlaySceneR
 // ————————————
 // 1) Camera that sits at (0,0,0) and always looks at `target`
 // ————————————
-function LockCamera({ target, scPos }) {
+function LockCamera({ target, scPos, scQuat = [0,0,0,1] }) {
   const { camera } = useThree();
 
-  // Reusable Vector3 so we don’t allocate every frame
-  const camPos = React.useMemo(
+  // Pre‐allocate these so we don’t thrash garbage each frame
+  const _pos = React.useMemo(
     () => new THREE.Vector3(scPos[0], scPos[1], scPos[2]),
     [scPos]
   );
+  const _worldNadir = React.useMemo(() => new THREE.Vector3(), []);
+  const _quat = React.useMemo(() => new THREE.Quaternion(), []);
 
   useFrame(() => {
     // 1) move camera to spacecraft
-    camera.position.copy(camPos);
+    camera.position.copy(_pos);
 
-    // 2) make “up” be +Z
+    // 2) keep +Z as “up”
     camera.up.set(0, 0, 1);
 
-    // 3) look at Europa’s world coords
-    camera.lookAt(target.x, target.y, target.z);
+    // 3) decide whether we actually have a non-identity SPICE quaternion
+    const [qx, qy, qz, qw] = scQuat;
+    const isPointingAvail = !(qx === 0 && qy === 0 && qz === 0 && qw === 1);
 
-    // 4) push the update through to the scene graph
+    if (isPointingAvail) {
+      // — compute world† quaternion from SPICE—
+      //    SPICE gives you body→inertial as [x,y,z,w],
+      //    so we invert it to get inertial→body (i.e. SC-to-world).
+      _quat.set(qx, qy, qz, qw).invert();
+
+      // — apply that to the local +Y axis to get the SC’s nadir in world‐space
+      _worldNadir.set(0, 1, 0).applyQuaternion(_quat);
+
+      // — look at the point (pos + nadirDir)
+      camera.lookAt(
+        camera.position.x + _worldNadir.x,
+        camera.position.y + _worldNadir.y,
+        camera.position.z + _worldNadir.z
+      );
+    } else {
+      // fallback: point at Europa
+      camera.lookAt(target.x, target.y, target.z);
+    }
+
+    // 4) push the change through
     camera.updateMatrixWorld();
   });
 
@@ -1132,7 +1156,7 @@ function LockCamera({ target, scPos }) {
 // 2) SecondaryView: identical scene, locked camera
 // ————————————
 function SecondaryView(props) {
-  const { bodies, scPos } = props;
+  const { bodies, scPos, scQuat } = props;
   const target = React.useMemo(() => {
     const europaPos = getWorldPos("Europa", bodies, scPos);
     return europaPos
@@ -1143,7 +1167,7 @@ function SecondaryView(props) {
   return (
     <Canvas
       className="view view-secondary"
-      camera={{ fov: 50, up: [0, 0, 1], near: 1e-14, far: 1e2, position: scPos }}
+      camera={{ fov: 50, up: [0, 0, 1], near: 1e-14, far: 1e2, position: [scPos] }}
       //shadows
       style={{ background: "black" }}
       gl={{ 
@@ -1154,9 +1178,11 @@ function SecondaryView(props) {
         toneMappingExposure:  1.0,
       }}
     >
-      <LockCamera target={target} scPos={scPos} />
+      <LockCamera target={target} scPos={scPos} scQuat={scQuat} />
       {/* pass exactly the same scene-props you give MainScene in your primary view: */}
       <MainScene {...props} />
+      <InstrumentFOVsAtNearPlane />
+      
     </Canvas>
   );
 }

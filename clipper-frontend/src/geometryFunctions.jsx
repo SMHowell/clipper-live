@@ -310,9 +310,6 @@ export function ClipperModel({ position, date, bodies, scPos, scQuat, saQuat }) 
           </group>
         </group>
       </group>
-
-
-
     </group>
   );
 }

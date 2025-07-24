@@ -1,0 +1,725 @@
+{
+  "159021": {
+    "frame": "EUROPAM_DSS+Y",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 66.0,
+    "cross_angle": 66.0,
+    "angle_units": "DEGREES"
+  },
+  "159022": {
+    "frame": "EUROPAM_DSS-Y",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 66.0,
+    "cross_angle": 66.0,
+    "angle_units": "DEGREES"
+  },
+  "159200": {
+    "frame": "EUROPAM_ETHEMIS",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 2.85,
+    "cross_angle": 2.1,
+    "angle_units": "DEGREES"
+  },
+  "159210": {
+    "frame": "EUROPAM_ETHEMIS",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      -0.02541626,
+      0.99967695
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 2.849205,
+    "cross_angle": 0.448368,
+    "angle_units": "DEGREES"
+  },
+  "159220": {
+    "frame": "EUROPAM_ETHEMIS",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 2.871464,
+    "cross_angle": 0.445188,
+    "angle_units": "DEGREES"
+  },
+  "159230": {
+    "frame": "EUROPAM_ETHEMIS",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.02541626,
+      0.99967695
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 2.868284,
+    "cross_angle": 0.429289,
+    "angle_units": "DEGREES"
+  },
+  "159202": {
+    "frame": "EUROPAM_ETHEMIS_RAD1",
+    "shape": "POLYGON",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "159203": {
+    "frame": "EUROPAM_ETHEMIS_RAD2",
+    "shape": "POLYGON",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "159060": {
+    "frame": "EUROPAM_MGA",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 10.0,
+    "angle_units": "DEGREES"
+  },
+  "159900": {
+    "frame": "EUROPAM_SUDA",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      1.0
+    ],
+    "ref_angle": 15.0,
+    "angle_units": "DEGREES"
+  },
+  "159300": {
+    "frame": "EUROPAM_UVS_AP",
+    "shape": "POLYGON",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "159301": {
+    "frame": "EUROPAM_UVS_SP",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 0.1,
+    "cross_angle": 0.1,
+    "angle_units": "DEGREES"
+  },
+  "159310": {
+    "frame": "EUROPAM_UVS_RAD",
+    "shape": "POLYGON",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "159030": {
+    "frame": "EUROPAM_ST1",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 10.845,
+    "angle_units": "DEGREES"
+  },
+  "159031": {
+    "frame": "EUROPAM_ST2",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 10.845,
+    "angle_units": "DEGREES"
+  },
+  "159034": {
+    "frame": "EUROPAM_ST1",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 26.0,
+    "angle_units": "DEGREES"
+  },
+  "159035": {
+    "frame": "EUROPAM_ST2",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 26.0,
+    "angle_units": "DEGREES"
+  },
+  "159036": {
+    "frame": "EUROPAM_ST1",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 45.0,
+    "angle_units": "DEGREES"
+  },
+  "159037": {
+    "frame": "EUROPAM_ST2",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 45.0,
+    "angle_units": "DEGREES"
+  },
+  "159038": {
+    "frame": "EUROPAM_ST1",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 20.0,
+    "angle_units": "DEGREES"
+  },
+  "159039": {
+    "frame": "EUROPAM_ST2",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 20.0,
+    "angle_units": "DEGREES"
+  },
+  "159800": {
+    "frame": "EUROPAM_REASON",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 30.0,
+    "cross_angle": 30.0,
+    "angle_units": "DEGREES"
+  },
+  "159801": {
+    "frame": "EUROPAM_REASON_VHF+X_I",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 3.0,
+    "angle_units": "DEGREES"
+  },
+  "159802": {
+    "frame": "EUROPAM_REASON_VHF+X_O",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 3.0,
+    "angle_units": "DEGREES"
+  },
+  "159803": {
+    "frame": "EUROPAM_REASON_HF+X",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 3.0,
+    "angle_units": "DEGREES"
+  },
+  "159804": {
+    "frame": "EUROPAM_REASON_VHF-X_I",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 3.0,
+    "angle_units": "DEGREES"
+  },
+  "159805": {
+    "frame": "EUROPAM_REASON_VHF-X_O",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 3.0,
+    "angle_units": "DEGREES"
+  },
+  "159806": {
+    "frame": "EUROPAM_REASON_HF-X",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 3.0,
+    "angle_units": "DEGREES"
+  },
+  "159101": {
+    "frame": "EUROPAM_EIS_NAC",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 0.5865,
+    "cross_angle": 1.1735,
+    "angle_units": "DEGREES"
+  },
+  "159102": {
+    "frame": "EUROPAM_EIS_WAC",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 12.0,
+    "cross_angle": 24.0,
+    "angle_units": "DEGREES"
+  },
+  "159111": {
+    "frame": "EUROPAM_EIS_WAC_RAD",
+    "shape": "POLYGON",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "159070": {
+    "frame": "EUROPAM_HGA",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 0.7,
+    "angle_units": "DEGREES"
+  },
+  "159600": {
+    "frame": "EUROPAM_MISE_BASE",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 0.007,
+    "cross_angle": 2.15,
+    "angle_units": "DEGREES"
+  },
+  "159601": {
+    "frame": "EUROPAM_MISE",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 0.007,
+    "cross_angle": 2.15,
+    "angle_units": "DEGREES"
+  },
+  "159610": {
+    "frame": "EUROPAM_MISE_RAD1",
+    "shape": "POLYGON",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "159611": {
+    "frame": "EUROPAM_MISE_RAD1",
+    "shape": "POLYGON",
+    "boresight": [
+      1.0,
+      0.0,
+      0.0
+    ]
+  },
+  "159612": {
+    "frame": "EUROPAM_MISE_RAD2",
+    "shape": "POLYGON",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "159613": {
+    "frame": "EUROPAM_MISE_RAD2",
+    "shape": "POLYGON",
+    "boresight": [
+      1.0,
+      0.0,
+      0.0
+    ]
+  },
+  "159081": {
+    "frame": "EUROPAM_FBA1",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 5.0,
+    "cross_angle": 50.0,
+    "angle_units": "DEGREES"
+  },
+  "159082": {
+    "frame": "EUROPAM_FBA2",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 5.0,
+    "cross_angle": 50.0,
+    "angle_units": "DEGREES"
+  },
+  "159083": {
+    "frame": "EUROPAM_FBA3",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 5.0,
+    "cross_angle": 50.0,
+    "angle_units": "DEGREES"
+  },
+  "159402": {
+    "frame": "EUROPAM_ECM_FG1",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 4.0,
+    "cross_angle": 1.0,
+    "angle_units": "DEGREES"
+  },
+  "159404": {
+    "frame": "EUROPAM_ECM_FG2",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 4.0,
+    "cross_angle": 1.0,
+    "angle_units": "DEGREES"
+  },
+  "159406": {
+    "frame": "EUROPAM_ECM_FG3",
+    "shape": "RECTANGLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "ref_angle": 4.0,
+    "cross_angle": 1.0,
+    "angle_units": "DEGREES"
+  },
+  "159500": {
+    "frame": "EUROPAM_MASPEX",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      0.0,
+      1.0,
+      1.0
+    ],
+    "ref_angle": 90.0,
+    "angle_units": "DEGREES"
+  },
+  "159050": {
+    "frame": "EUROPAM_LGA+Y",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 80.0,
+    "angle_units": "DEGREES"
+  },
+  "159051": {
+    "frame": "EUROPAM_LGA-Y",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 80.0,
+    "angle_units": "DEGREES"
+  },
+  "159052": {
+    "frame": "EUROPAM_LGA-Z",
+    "shape": "CIRCLE",
+    "boresight": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "ref_vector": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "ref_angle": 80.0,
+    "angle_units": "DEGREES"
+  }
+}
