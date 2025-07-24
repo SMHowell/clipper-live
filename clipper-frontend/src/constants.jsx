@@ -3,7 +3,7 @@
 // ——— Distance & size scales ———
 export const KM_PER_AU      = 149_597_870.7;  // kilometers per astronomical unit
 export const STAR_DIST_SCALE = 1000;          // scale factor for star distances
-export const STAR_SIZE_SCALE = 10;            // scale factor for star sizes
+export const STAR_SIZE_SCALE = 1;            // scale factor for star sizes
 
 // ——— Encounter code → full name map ———
 export const ENCOUNTER_MAP = {

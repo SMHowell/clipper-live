@@ -23,6 +23,7 @@ import {InstrumentFOVsAtNearPlane} from "./InstrumentFOVs";
 import {
   KM_PER_AU,
   STAR_DIST_SCALE,
+  STAR_SIZE_SCALE,
   ENCOUNTER_MAP,
   PLANET_NAMES,
   SAT_PARENT,
@@ -814,9 +815,6 @@ function Scene({
   const circleTex = makeCircleTexture(64);
   const earthPos = getWorldPos("Earth", bodies, scPos);
 
-  // Constants
-  const MAX_POINT_SIZE = 3; // maximum pixel size for the brightest star
-
   // ─── Build bodies & satellites (no scaling) ───
   const bodyMeshes = useMemo(() =>
     bodies.map(b => {
@@ -875,7 +873,7 @@ function Scene({
     geo.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
 
     const mat = new THREE.PointsMaterial({
-      size: MAX_POINT_SIZE,
+      size: STAR_SIZE_SCALE,
       sizeAttenuation: false, // ← turn off world‐space scaling
       map: circleTex,
       alphaTest: 0.5, // drop the corners
@@ -901,8 +899,8 @@ function Scene({
       // color per star
       const c = new THREE.Color(colorMap[name] || "white");
       colors.push(c.r, c.g, c.b);
-      // size in pixels, scale normalized magnitude to MAX_POINT_SIZE
-      sizes.push(magnitude * MAX_POINT_SIZE);
+      // size in pixels, scale normalized magnitude to STAR_SIZE_SCALE
+      sizes.push(magnitude * STAR_SIZE_SCALE);
     });
 
     const geo = new THREE.BufferGeometry();
