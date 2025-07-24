@@ -12,7 +12,7 @@ import * as THREE from "three";
 import Papa from "papaparse";
 
 // App functions 
-import { BodySphere, ClipperModel } from './geometryFunctions.jsx';
+import { BodySphere, ClipperModel, LatLonOverlay } from './geometryFunctions.jsx';
 import OrbitLine from './geometryFunctions.jsx';
 import { getWorldPos } from "./getWorldPos.jsx";
 
@@ -37,9 +37,10 @@ export default function App() {
   const [orbitSamples, setOrbitSamples] = useState({});
   const [orbitElements, setOrbitElements] = useState({});
   const now = new Date();
-  const pad = (n, len = 2) => String(n).padStart(len, "0")
-;  const [radiiKm, setRadii] = useState({});
-
+  const pad = (n, len = 2) => String(n).padStart(len, "0");
+  const [radiiKm, setRadii] = useState({});
+  const [showLatLon, setShowLatLon] = useState(true);
+  const [showGeoMaps, setShowGeoMaps] = useState(false);
   const [year, setYear] = useState(now.getUTCFullYear()); 
   const [month, setMonth] = useState(pad(now.getUTCMonth() + 1));
   const [day, setDay] = useState(pad(now.getUTCDate()));
@@ -60,6 +61,11 @@ export default function App() {
   const groupRef = useRef();
   const lastPos = useRef([0, 0]);
 
+  const cameraRef       = useRef();
+  const rendererRef     = useRef();
+  const mainSceneRef    = useRef();
+  const overlaySceneRef = useRef(new THREE.Scene()); 
+
   // 1) a quick “are we ready?” test
   const isDataReady =
     bodies.length > 0 &&                 // fetched
@@ -75,29 +81,18 @@ export default function App() {
     const enc = encounters.find(c => c.code === code);
     if (!enc?.date) return;
 
-    let iso = enc.date;
-     const newDateIso = new Date(iso).toISOString();
-     setDate(newDateIso);
-
-     // ── MANUALLY UPDATE ALL FIELDS ──
-     const dt = new Date(newDateIso);
-     if (useLocalTime) {
-       setYear(      dt.getFullYear().toString() );
-       setMonth(     pad(dt.getMonth()  + 1)      );
-       setDay(       pad(dt.getDate())             );
-       setHour(      pad(dt.getHours())            );
-       setMinute(    pad(dt.getMinutes())          );
-       setSecond(    pad(dt.getSeconds())          );
-       setFraction(  pad(dt.getMilliseconds(), 4)  );
-     } else {
-       setYear(      dt.getUTCFullYear().toString() );
-       setMonth(     pad(dt.getUTCMonth()  + 1)      );
-       setDay(       pad(dt.getUTCDate())             );
-       setHour(      pad(dt.getUTCHours())            );
-       setMinute(    pad(dt.getUTCMinutes())          );
-       setSecond(    pad(dt.getUTCSeconds())           );
-       setFraction(  pad(dt.getUTCMilliseconds(), 4)   );
+    // 4) Parse always as UTC/Ephemeris Time
+    const raw   = enc.date.trim();
+    const isoZ  = raw.endsWith("Z") ? raw : raw + "Z";
+    const dtUtc = new Date(isoZ);
+    if (isNaN(dtUtc.getTime())) {
+      console.error(`Invalid encounter date: "${enc.date}"`);
+      return;
     }
+
+    // 5) Write back your master date (always Z-ISO)
+    const utcIso = dtUtc.toISOString();
+    setDate(utcIso);
   }
 
   // fetch & parse CSV once
@@ -604,9 +599,28 @@ export default function App() {
               </option>
             ))}
           </select>
+          {/* ── Show lat/lon toggle ── */}
+          <label className="inline-flex items-center mt-2 text-white">
+            <input
+              type="checkbox"
+              checked={showLatLon}
+              onChange={e => setShowLatLon(e.target.checked)}
+              className="form-checkbox h-4 w-4"
+            />
+            <span className="ml-2">Show lat/lon</span>
+          </label>
+          {/* ── Show GeoMaps toggle ── */}
+          <label className="inline-flex items-center mt-2 text-white">
+            <input
+              type="checkbox"
+              checked={showGeoMaps}
+              onChange={e => setShowGeoMaps(e.target.checked)}
+              className="form-checkbox h-4 w-4"
+            />
+            <span className="ml-2">Geologic Maps</span>
+          </label>
         </div>
       </div>
-
         </CollapsibleContainer>
       {/* ────────────────────────────────────────────────────────── */}
 
@@ -621,7 +635,13 @@ export default function App() {
             toneMapping:          THREE.ACESFilmicToneMapping,
             toneMappingExposure:  1.0,
           }}
-          camera={{ position: [10, 0, 5], fov: 50, up: [0, 0, 1], near: 1e-12, far: 1e3 }}
+          camera={{ position: [10, 0, 5], fov: 50, up: [0, 0, 1], near: 1e-12, far: 1e2 }}
+          onCreated={({ gl, scene, camera }) => {
+              // Store in refs
+              rendererRef.current = gl;
+              cameraRef.current   = camera;
+              mainSceneRef.current = scene;
+          }}
         >
           <group ref={groupRef}>
             <Scene 
@@ -634,14 +654,23 @@ export default function App() {
               scQuat={scQuat}
               saQuat={saQuat}
               bodyStates={bodyStates}
+              showLatLon={showLatLon}
+              showGeoMaps={showGeoMaps}
+              overlaySceneRef={overlaySceneRef}
             />
+            <MultiPassRenderer
+              rendererRef={rendererRef}
+              cameraRef={cameraRef}
+              mainSceneRef={mainSceneRef}
+              overlaySceneRef={overlaySceneRef}
+            />            
           </group>
           <OrbitControls
             ref={controlsRef}
             enableRotate={false}
             enablePan={false}
             enableZoom
-            maxDistance={STAR_DIST_SCALE-5}     // don’t go farther than 20 units
+            maxDistance={100}     // don’t go farther than 20 units
           />
           </Canvas>
       ) : (
@@ -678,7 +707,21 @@ function enforceNoRoll(cam) {
   cam.up.copy(up);
 }
 
-function Scene({ date, bodies, stars, scPos, trajectory, orbitLines, radiiKm, scQuat, saQuat, bodyStates }) {
+function Scene({ 
+    date, 
+    bodies, 
+    stars, 
+    scPos, 
+    trajectory, 
+    orbitLines, 
+    radiiKm, 
+    scQuat, 
+    saQuat, 
+    bodyStates, 
+    showLatLon, 
+    showGeoMaps, 
+    overlaySceneRef 
+  }) {
   // only continue once we have what we need
   const ready =
     bodies.length > 0 &&
@@ -722,15 +765,32 @@ function Scene({ date, bodies, stars, scPos, trajectory, orbitLines, radiiKm, sc
           key={b.name}
           name={b.name}
           position={getWorldPos(b.name, bodies, scPos)}
-          quaternion={bodyStates[b.name].quat}   // <--- the quaternion from backend
+          quaternion={bodyStates[b.name].quat}
           radiiKm={radiiKm?.[b.name]}
           color={colorMap[b.name]}
           levels={[[256,0.005],[128,0.1],[64,1],[32,200]]}
+          showGeoMaps={showGeoMaps}
         />
       );
     }),
-    [bodies]
+    [bodies, showLatLon, showGeoMaps]
   );
+
+  const latLonMeshes= useMemo(() =>
+    bodies.map(b => {
+      return (
+        <LatLonOverlay
+          key={b.name}
+          position={getWorldPos(b.name, bodies, scPos)}
+          quaternion={bodyStates[b.name].quat}
+          radiiKm={radiiKm?.[b.name]}
+          overlaySceneRef={overlaySceneRef}
+        />
+      );
+    }),
+    [bodies, showLatLon]
+  );
+
 
   // Build a little “glow” point for each body (including satellites)
   const glow = useMemo(() => {
@@ -855,7 +915,10 @@ function Scene({ date, bodies, stars, scPos, trajectory, orbitLines, radiiKm, sc
       </mesh> */}
 
       {/* Bodies */}
+
       {bodyMeshes}
+
+      {showLatLon && latLonMeshes}
 
 {/*      <SubJovianArrow
         europaName="Europa"
@@ -991,4 +1054,19 @@ export function SubJovianArrow({
   });
 
   return null;    // we did all the work in side-effects
+}
+
+function MultiPassRenderer({ rendererRef, cameraRef, mainSceneRef, overlaySceneRef }) {
+  useFrame(() => {
+    const r = rendererRef.current;
+    const c = cameraRef.current;
+    const s = mainSceneRef.current;
+    const o = overlaySceneRef.current;
+    if (!r || !c || !s || !o) return;
+    r.autoClear = false;
+    r.clear();       // color + depth
+    r.render(s, c);  // main scene
+    r.render(o, c);  // overlay scene
+  }, 1);
+  return null;
 }

@@ -1,7 +1,7 @@
 // src/components/LODSphere.js
 
 import React, { useRef, useEffect, useMemo, useState } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame, useThree, createPortal } from '@react-three/fiber';
 import { useGLTF, Text } from "@react-three/drei";
 import * as THREE from 'three';
 
@@ -30,9 +30,57 @@ import {
  *  - color:     THREE.Color-compatible
  *  - levels:    Array<[segments: number, switchDistanceAU: number]>
  */
-function LODSphere({
+function useTextureWithFallback(name, showGeoMaps) {
+  const [texture, setTexture] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const loader = new THREE.TextureLoader()
+
+    const primary   = showGeoMaps ? 'GeoMaps'   : 'PhotoMaps'
+    const secondary = showGeoMaps ? 'PhotoMaps' : 'GeoMaps'
+
+    // Build the sequence of [folder, extension] tries
+    const attempts = [
+      [primary,   '.png'],
+      [primary,   '.jpg'],
+      [secondary, '.png'],
+      [secondary, '.jpg'],
+    ]
+
+    // Recursively try each [folder, ext]
+    const tryNext = idx => {
+      if (cancelled) return
+      if (idx >= attempts.length) {
+        setTexture(null)
+        return
+      }
+
+      const [folder, ext] = attempts[idx]
+      const url = `/${folder}/${name}${ext}`
+
+      loader.load(
+        url,
+        tex => {
+          if (!cancelled) setTexture(tex)
+        },
+        undefined,
+        () => tryNext(idx + 1)  // onError → next attempt
+      )
+    }
+
+    tryNext(0)
+
+    return () => { cancelled = true }
+  }, [name, showGeoMaps])
+ 
+  return texture
+}
+
+
+export function LODSphere({
   name,
-  date,
+  date,          // if you need this elsewhere
   position,
   radiiKm,
   color = 'white',
@@ -42,95 +90,90 @@ function LODSphere({
     [32, 30],
     [64, 80],
   ],
+  showGeoMaps,
 }) {
-  const { camera } = useThree();
-  const lodRef = useRef();
+  const { camera } = useThree()
+  const lodRef = useRef()
 
-  const texture = useMemo(() => {
-    if (name === "Europa") {
-      return new THREE.TextureLoader().load('/EuropaColorTestFixed.png');
-    } else if (name === "Earth") {
-      return new THREE.TextureLoader().load('/Envisat_mosaic_May_-_November_2004.png');
-    } else if (name === "Moon") {
-      return new THREE.TextureLoader().load('/moon_lro_lroc-wac_mosaic_global_1024.jpg');
-    } else {
-      return null;
-    }
-    
-  }, [name]);
+  // 1) Try loading name.png then name.jpg, else null
+  const texture = useTextureWithFallback(name, showGeoMaps)
 
-  // 2) build your LOD object once
+  // 2) Build LOD
   const lod = useMemo(() => {
-    const obj = new THREE.LOD();
+    const obj = new THREE.LOD()
+    const isSun = name === 'Sun'
+
     levels.forEach(([segments, distAU]) => {
-      const geom = new THREE.SphereGeometry(1, segments, segments);
-      const matOptions = { color };
-      if (name === "Europa" && texture) {
-        Object.assign(matOptions, {
-          map: texture,
-        });
-        delete matOptions.color;
-      } 
-      if (name === "Earth" && texture) {
-        Object.assign(matOptions, {
-          map: texture,
-        });
-        delete matOptions.color;
-      } 
-      if (name === "Moon" && texture) {
-        Object.assign(matOptions, {
-          map: texture,
-        });
-        delete matOptions.color;
-      }       
-      if (name === 'Sun') {
-        Object.assign(matOptions, {
-          emissive: color,
-          emissiveIntensity: 1.5,
-          toneMapped: false,
-        });
-        delete matOptions.color;
+      const geom = new THREE.SphereGeometry(1, segments, segments)
+
+      // Base material opts
+      const matOpts = { color }
+
+      if (texture && !isSun) {
+        // apply texture for non-sun bodies
+        matOpts.map = texture
+        delete matOpts.color
       }
-      const mesh = new THREE.Mesh(
-        geom,
-        new THREE.MeshStandardMaterial(matOptions)
-      );
-      obj.addLevel(mesh, distAU);
-    });
 
+      if (isSun) {
+        // special emissive Sun
+        matOpts.emissive = color
+        matOpts.emissiveIntensity = 1.5
+        matOpts.toneMapped = false
+        delete matOpts.color
+      }
 
-    // if it's the Sun, tack a PointLight onto the same object
+      const mat = new THREE.MeshStandardMaterial(matOpts)
+      const mesh = new THREE.Mesh(geom, mat)
+      obj.addLevel(mesh, distAU)
+    })
+
+    // tack on point-light to the Sun LOD
     if (name === 'Sun') {
-      const light = new THREE.PointLight('white', 2, /*distance=*/0, /*decay=*/0);
-      light.castShadow = true;
-      light.shadow.mapSize.width = 1024;
-      light.shadow.mapSize.height = 1024;
-      // The light is centered at the origin of `obj`, so it'll follow obj’s transform
-      obj.add(light);
+      const light = new THREE.PointLight('white', 2, 0, 0)
+      light.castShadow = true
+      light.shadow.mapSize.set(1024, 1024)
+      obj.add(light)
     }
 
-    return obj;
-  }, [levels, color, name]);
+    return obj
+  }, [levels, color, name, texture])
 
-  // 3) scale factors once
+  // 3) Compute scale once
   const [scaleX, scaleY, scaleZ] = useMemo(
-    () => radiiKm.map((r) => r / KM_PER_AU),
+    () => radiiKm.map(r => r / KM_PER_AU),
     [radiiKm]
-  );
+  )
 
-  // 4) on every frame, position + rotate + LOD‐update
+  // 4) On every frame: position, scale, and update LOD
   useFrame(() => {
-    if (!lodRef.current) return;
-    const M = new THREE.Matrix4();
-    M.multiply(new THREE.Matrix4().makeScale(scaleX, scaleY, scaleZ));
-    M.setPosition(new THREE.Vector3(...position));
-    lodRef.current.matrixAutoUpdate = false;
-    lodRef.current.matrix.copy(M);
-    lodRef.current.update(camera);
-  });
+    const lodObj = lodRef.current
+    if (!lodObj) return
+    const M = new THREE.Matrix4()
+      .makeScale(scaleX, scaleY, scaleZ)
+      .setPosition(new THREE.Vector3(...position))
+    lodObj.matrixAutoUpdate = false
+    lodObj.matrix.copy(M)
+    lodObj.update(camera)
+  })
 
-  // 5) render
-  return <primitive ref={lodRef} object={lod} />;
+  // 5) Render
+  return <primitive ref={lodRef} object={lod} />
+}
+
+function usePlanetTransform(quaternion) {
+  const modelFixQ = useMemo(() => {
+    const q = new THREE.Quaternion();
+    q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    return q;
+  }, []);
+
+  const bodyQ = useMemo(() => {
+    if (!quaternion) return new THREE.Quaternion();
+    return new THREE.Quaternion(...quaternion); // [x,y,z,w]
+  }, [quaternion]);
+
+  return useMemo(() => bodyQ.clone().multiply(modelFixQ), [bodyQ, modelFixQ]);
 }
 
 /**
@@ -139,46 +182,52 @@ function LODSphere({
  * Top‐level component that reads your spice‐radii hook
  * and world‐position util, then renders LODSphere.
  */
-export function BodySphere({ name, position, quaternion, color, levels, radiiKm }) {
-  // -90 deg about X axis to go from Z-up (sphere mesh) to Y-up (planetary frame)
-  const modelFixQ = useMemo(() => {
-    const q = new THREE.Quaternion();
-    q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
-    return q;
-  }, []);
-
-  const bodyQ = useMemo(() => {
-    if (!quaternion) return new THREE.Quaternion();
-    return new THREE.Quaternion(...quaternion); // [x,y,z,w] from backend
-  }, [quaternion]);
-
-  // Compose: modelFixQ * bodyQ (order matters: physical orientation, then fix)
-  const finalQ = useMemo(() => {
-    return bodyQ.clone().multiply(modelFixQ);
-  }, [bodyQ, modelFixQ]);
-
+export function BodySphere({ name, position, quaternion, color, levels, radiiKm, showGeoMaps }) {
+  const finalQ = usePlanetTransform(quaternion);
   if (!Array.isArray(radiiKm) || !position) return null;
 
   return (
     <group position={position} quaternion={finalQ}>
       <LODSphere
         name={name}
-        position={[0,0,0]} // Now at group origin
+        position={[0, 0, 0]} // center
         radiiKm={radiiKm}
         color={color}
         levels={levels}
-      />
-      <LatLonGrid
-        radiusAU={radiiKm[0] / KM_PER_AU}
-        spacing={15}
-        lineColor="gray"
-        labelColor="white"
-        labelSize={0.02}
+        showGeoMaps={showGeoMaps}
       />
     </group>
   );
 }
 
+/**
+ * Renders your LatLonGrid into the separate overlay scene,
+ * guaranteed to draw *after* the main scene.
+ */
+export function LatLonOverlay({
+  overlaySceneRef,
+  position,
+  quaternion,
+  radiiKm,
+  spacing = 15
+}) {
+  const finalQ = usePlanetTransform(quaternion);
+  if (!position || !Array.isArray(radiiKm)) return null;
+
+ // createPortal takes (children, targetScene)
+ return createPortal(
+   <group position={position} quaternion={finalQ}>
+     <LatLonGrid
+       radiiAU={radiiKm.map(r => 1.002 * r / KM_PER_AU)}
+       spacing={spacing}
+       lineColor="gray"
+       labelColor="white"
+       labelSize={0.02}
+     />
+   </group>,
+   overlaySceneRef.current
+ );
+}
 export function ClipperModel({ position, date, bodies, scPos, scQuat, saQuat }) {
   // 1) load two separate GLTFs
   const { scene: scScene }    = useGLTF("/clipper_spacecraft_sc.glb");
@@ -399,98 +448,135 @@ export function useOrbitTrack(date, duration = 24*60*60, step = 60*60) {
 
   return track;
 }
-
+ 
 export function LatLonGrid({
-  radiusAU,
-  spacing     = 15,       // degrees between lines
-  segments    = 64,       // subdivisions per circle
-  lineColor   = 'lightgray',
-  labelColor  = 'white',
-  labelSize   = 0.02,     // base size (multiplied by radiusAU)
+  // now pass an array [rx,ry,rz] in AU—no `date` prop here!
+  radiiAU    = [1, 1, 1],
+  spacing    = 15,
+  segments   = 128,
+  lineColor  = 'lime',
+  labelColor = 'lime',
+  labelSize  = 0.02,       // base size, multiplied by the largest axis
 }) {
+  // unpack your three semi-axes
+  const [rx, ry, rz] = Array.isArray(radiiAU)
+    ? radiiAU
+    : [radiiAU, radiiAU, radiiAU]
+
+  // ── build the grid once ──
   const grid = useMemo(() => {
-    const g = new THREE.Group()
+    const g   = new THREE.Group()
     const mat = new THREE.LineBasicMaterial({ color: lineColor })
 
-    // ── Parallels (constant latitude) ──
+    // Parallels (constant latitude φ)
     for (let lat = -90; lat <= 90; lat += spacing) {
-      const φ = THREE.MathUtils.degToRad(lat)
-      const y = Math.sin(φ) * radiusAU
-      const r = Math.cos(φ) * radiusAU
-      // circle in the XZ plane at height y:
-      const geom = new THREE.CircleGeometry(r, segments)
-      geom.deleteAttribute('normal')        // not needed
-      geom.deleteAttribute('uv')
-      geom.attributes.position.array.copyWithin( 0, 3 ) // shift ring out of center
-      const line = new THREE.LineLoop(geom, mat)
-      line.rotation.x = Math.PI / 2
-      line.position.y = y
-      g.add(line)
+      const φ  = THREE.MathUtils.degToRad(lat)
+      const y  = Math.sin(φ) * ry
+      const px = Math.cos(φ) * rx
+      const pz = Math.cos(φ) * rz
+
+      const pts = []
+      for (let i = 0; i <= segments; i++) {
+        const ang = (i / segments) * Math.PI * 2
+        pts.push(new THREE.Vector3(
+          Math.cos(ang) * px,
+          y,
+          Math.sin(ang) * pz
+        ))
+      }
+      const geom = new THREE.BufferGeometry().setFromPoints(pts)
+      g.add(new THREE.LineLoop(geom, mat))
     }
 
-    // ── Meridians (constant longitude) ──
+    // Meridians (constant longitude θ)
     for (let lon = 0; lon < 360; lon += spacing) {
-      const θ = THREE.MathUtils.degToRad(lon)
+      const θ      = THREE.MathUtils.degToRad(lon)
       const points = []
       for (let lat = -90; lat <= 90; lat += 1) {
         const φ = THREE.MathUtils.degToRad(lat)
-        const x = radiusAU * Math.cos(φ) * Math.cos(θ)
-        const y = radiusAU * Math.sin(φ)
-        const z = radiusAU * Math.cos(φ) * Math.sin(θ)
-        points.push(new THREE.Vector3(x, y, z))
+        points.push(new THREE.Vector3(
+          rx * Math.cos(φ) * Math.cos(θ),
+          ry * Math.sin(φ),
+          rz * Math.cos(φ) * Math.sin(θ)
+        ))
       }
       const geom = new THREE.BufferGeometry().setFromPoints(points)
       g.add(new THREE.Line(geom, mat))
     }
 
     return g
-  }, [radiusAU, spacing, segments, lineColor])
+  }, [rx, ry, rz, spacing, segments, lineColor])
+
 
   return (
     <group>
       <primitive object={grid} />
 
-      {/* ── Longitude labels at equator ── */}
+      {/* ── Longitude labels ── */}
       {Array.from({ length: 360 / spacing }, (_, i) => {
         const lon = i * spacing
         const θ   = THREE.MathUtils.degToRad(lon)
-        const x   = radiusAU * Math.cos(θ)
-        const z   = radiusAU * Math.sin(θ)
+        const x   = 1.01 * rx * Math.cos(θ)
+        const z   = 1.01 * rz * Math.sin(θ)
+
+        // ellipsoid normal → quaternion
+        const dir  = new THREE.Vector3(x/(rx*rx), 0, z/(rz*rz)).normalize()
+        const quat = new THREE.Quaternion()
+          .setFromUnitVectors(new THREE.Vector3(0,0,1), dir)
+
+        // label text, no E/W at 0° or 180°
+        let labelLon
+        if (lon === 0 || lon === 180) {
+          labelLon = `${lon}°`
+        } else {
+          const disp = lon < 180 ? lon : 360 - lon
+          const hemi = lon < 180 ? 'E' : 'W'
+          labelLon    = `${disp}°${hemi}`
+        }
+
         return (
           <Text
-            key={`lon-${lon}`}
-            position={[ x, 0,  z ]}
-            rotation={[ 0, THREE.MathUtils.degToRad(-lon), 0 ]}
-            fontSize={labelSize * radiusAU}
+            key={labelLon}
+            position={[x, 0, z]}
+            quaternion={[quat.x, quat.y, quat.z, quat.w]}
+            fontSize={labelSize * Math.max(rx, rz)}
             color={labelColor}
             anchorX="center"
             anchorY="middle"
           >
-            {lon}°
+            {labelLon}
           </Text>
         )
       })}
 
-      {/* ── Latitude labels on prime meridian ── */}
-      {Array.from({ length: 180 / spacing + 1 }, (_, j) => {
+      {/* ── Latitude labels ── */}
+     {Array.from({ length: 180 / spacing + 1 }, (_, j) => {
         const lat = -90 + j * spacing
         const φ   = THREE.MathUtils.degToRad(lat)
-        const y   = Math.sin(φ) * radiusAU
-        const r   = Math.cos(φ) * radiusAU
+        const x   = 1.01 * rx * Math.cos(φ)
+        const y   = 1.01 * Math.sin(φ) * ry
+
+        let labelLat;
+        if (lat === 0) {
+          labelLat = `0°`;
+        } else {
+          const displayLat = Math.abs(lat);
+          const hemiLat    = lat >= 0 ? 'N' : 'S';
+          labelLat = `${displayLat}°${hemiLat}`;
+        }
+
         return (
           <Text
             key={`lat-${lat}`}
-            position={[ 0, y,  r ]}
-            rotation={[ THREE.MathUtils.degToRad(-lat), 0, 0 ]}
-            fontSize={labelSize * radiusAU}
+            position={[x, y, 0]}
+            rotation={[0,Math.PI/2, 0]}
+            fontSize={labelSize * rx}
             color={labelColor}
-            anchorX="center"
-            anchorY="middle"
           >
-            {lat}°
+            {labelLat}
           </Text>
         )
       })}
-    </group>
+      </group>
   )
 }
