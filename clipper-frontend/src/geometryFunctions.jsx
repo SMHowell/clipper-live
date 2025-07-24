@@ -117,6 +117,9 @@ export function LODSphere({
         matOpts.metalness=0
         matOpts.roughness=1,      // maximum roughness → zero specular
         matOpts.toneMapped=true // let the renderer tone-map it normally
+        matOpts.emissive = 'white';
+        matOpts.emissiveMap = texture; 
+        matOpts.emissiveIntensity = 0.05
       }
 
       if (isSun) {
@@ -276,7 +279,7 @@ export function ClipperModel({ position, date, bodies, scPos, scQuat, saQuat }) 
   const HINGE_OFFSET_M = -1.7388; 
 
   // 7) overall scale
-  const SCALE = 10*35.47 / 1e3 / KM_PER_AU;
+  const SCALE = 35.47 / 1e3 / KM_PER_AU;
 
   return (
     <group position={position} scale={[SCALE, SCALE, SCALE]}>

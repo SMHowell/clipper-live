@@ -635,12 +635,13 @@ export default function App() {
             toneMapping:          THREE.ACESFilmicToneMapping,
             toneMappingExposure:  1.0,
           }}
-          camera={{ position: [10, 0, 5], fov: 50, up: [0, 0, 1], near: 1e-12, far: 1e2 }}
+          camera={{ position: [10, 0, 5], fov: 50, up: [0, 0, 1], near: 1e-14, far: 1e2 }}
           onCreated={({ gl, scene, camera }) => {
               // Store in refs
               rendererRef.current = gl;
               cameraRef.current   = camera;
               mainSceneRef.current = scene;
+
           }}
         >
           <group ref={groupRef}>
@@ -889,7 +890,7 @@ function Scene({
       </EffectComposer>
 
       {/* Lights */}
-      {/*<ambientLight intensity={0.1} />*/}
+      <ambientLight intensity={0.1} />
 
       {/* Trajectory */}
 {/*      {trajectory?.length > 0 && (

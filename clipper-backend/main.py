@@ -51,11 +51,9 @@ def ensure_kernels():
             sp.furnsh(str(kernel_path))
  
 # Load  meta‐kernel at import time
-print("[SC-STATE] Timing SPICE kernel load…")
 t0 = time.perf_counter()
 ensure_kernels()
 t1 = time.perf_counter()
-print(f"[SC-STATE] Loaded SPICE kernels from meta_kernel.tm in {(t1-t0):.3f}s")
 
 class AttResponse(BaseModel):
     quat: list[float]  # [x,y,z,w]
