@@ -142,7 +142,7 @@ export function InstrumentFOVsAtNearPlane(fov) {
   });
 
   const meshes = useMemo(() => {
-    const z = -1e-12;
+    const z = -1e-11;
 
     return INSTRUMENT_FOVS.map((fov) => {
       const θx = degToRad(fov.fov_x);

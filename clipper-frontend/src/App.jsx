@@ -55,6 +55,8 @@ export default function App() {
   const [fraction, setFraction] = useState(pad(now.getUTCMilliseconds(), 4));
   const [bodyStates, setBodyStates] = useState({}); 
   const [secondaryFOV, setSecondaryFOV] = useState(50);  // default value matching the current camera
+  const [primaryFOV, setPrimaryFOV] = useState(50);
+  const [showPrimaryFOVs, setShowPrimaryFOVs] = useState(false);
 
   const [selectedEncounterCode, setSelEnc] = useState("");
   const [encounters, setEncounters] = useState([]);
@@ -406,7 +408,17 @@ export default function App() {
      .copy(ctrl.object.position)
      .sub(ctrl.target);
   }
-
+  // 🔁 Update camera FOV reactively
+  function CameraFOVUpdater({ fov }) {
+    const { camera } = useThree();
+    useFrame(() => {
+      if (camera.fov !== fov) {
+        camera.fov = fov;
+        camera.updateProjectionMatrix();
+      }
+    });
+    return null;
+  }
   return (
     <div
       className="view-container" 
@@ -627,7 +639,10 @@ export default function App() {
             <span className="ml-2">Geologic Maps</span>
           </label>
         </div>
-              {/* ─────── Secondary FOV Slider ─────── */}
+
+                    {/* ───────  FOV Slider ─────── */}
+
+
       <div
         style={{
           marginTop: 0,
@@ -640,7 +655,31 @@ export default function App() {
           gap: "0.5rem",
           width: "95%",
         }}
-      >
+      > 
+        <label className="inline-flex items-center mt-2 text-white">
+    <input
+      type="checkbox"
+      checked={showPrimaryFOVs}
+      onChange={e => setShowPrimaryFOVs(e.target.checked)}
+      className="form-checkbox h-4 w-4"
+    />
+    <span className="ml-2">Show FOV overlays (primary)</span>
+  </label>
+        
+        <label htmlFor="fov-slider" className="block mb-1">
+          Primary View FOV: {secondaryFOV}°
+        </label>
+        <input
+          id="primary-fov-slider"
+          type="range"
+          min={10}
+          max={120}
+          step={1}
+          value={primaryFOV}
+          onChange={(e) => setPrimaryFOV(Number(e.target.value))}
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerMove={(e) => e.stopPropagation()}
+        />
         <label htmlFor="fov-slider" className="block mb-1">
           Secondary View FOV: {secondaryFOV}°
         </label>
@@ -674,7 +713,7 @@ export default function App() {
               toneMapping:          THREE.ACESFilmicToneMapping,
               toneMappingExposure:  1.0,
             }}
-            camera={{ position: [10, 0, 5], fov: 50, up: [0, 0, 1], near: 1e-14, far: 1e2 }}
+            camera={{ position: [10, 0, 5], fov: primaryFOV, up: [0, 0, 1], near: 1e-14, far: 1e2 }}
             onCreated={({ gl, scene, camera }) => {
                 // Store in refs
                 rendererRef.current = gl;
@@ -684,6 +723,7 @@ export default function App() {
             }}
           >
             <group ref={groupRef}>
+              <CameraFOVUpdater fov={primaryFOV} />
               <MainScene 
                 date={date} 
                 bodies={bodies} 
@@ -699,6 +739,7 @@ export default function App() {
                 overlaySceneRef={overlaySceneRef}
                 isPrimaryScene={true}
               />
+              {showPrimaryFOVs && <InstrumentFOVsAtNearPlane fov={primaryFOV} />}
               <MultiPassRenderer
                 rendererRef={rendererRef}
                 cameraRef={cameraRef}
