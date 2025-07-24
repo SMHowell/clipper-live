@@ -1,42 +1,41 @@
+/* ── SPLIT VIEW LAYOUT ── */
+.view-container {
+  display: flex;           /* side-by-side */
+  flex-direction: row;     /* explicit, in case something else set column */
+  width: 100vw;            /* full viewport width */
+  height: 100vh;           /* full viewport height */
+  margin: 0;               /* override any #root centering */
+  padding: 0;
+  overflow: hidden;        /* hide overflow if any */
+}
+
+.view {
+  flex: 1 1 0;     /* keep equal grow/shrink */
+  min-width: 0;    /* <-- allow it to collapse */
+  min-height: 0;   /* <-- for the portrait case, allow vertical shrink */
+  height: 100%;
+}
+
+
+/* optional: if you ever want to tweak ordering */
+.view-primary  { order: 1; }
+.view-secondary{ order: 2; }
+
+/* Portrait: swap them top/bottom if you really want—but
+   since we’re row-based, you could also leave this out: */
+
+/* ── UNDO THE CRA/#root CONSTRAINT ┒─ */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  max-width: none;  /* let it fill the screen */
+  padding: 0;
+  margin: 0;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+/* ── Portrait: stack them in two rows ── */
+@media (max-aspect-ratio: 1/1) {
+  .view-container {
+    flex-direction: column;  /* switch to rows */
   }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  /* .view { flex:1 } remains the same: flex will divide the height equally */
 }

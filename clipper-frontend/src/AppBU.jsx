@@ -1,6 +1,4 @@
 /** @refresh reset */
-
-import "./App.css";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
@@ -408,7 +406,6 @@ export default function App() {
     <div
       className="view-container" 
       style={{ height: "100vh", width: "100vw", overflow: "hidden" }}
-      tabIndex={0}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onDragStart={e => e.preventDefault()}
@@ -420,6 +417,7 @@ export default function App() {
           handleDateSubmit();
         }
       }}
+      tabIndex={0} // ensure it can receive keyboard events
     >
       {/* ────────────────────────────────────────────────────────── */}
       {/* Date & Time picker above Encounter selector */}
@@ -663,7 +661,6 @@ export default function App() {
                 showLatLon={showLatLon}
                 showGeoMaps={showGeoMaps}
                 overlaySceneRef={overlaySceneRef}
-                isPrimaryScene={true}
               />
               <MultiPassRenderer
                 rendererRef={rendererRef}
@@ -708,7 +705,6 @@ export default function App() {
         showLatLon={showLatLon}
         showGeoMaps={showGeoMaps}
         overlaySceneRef={overlaySceneRef}
-        isPrimaryScene={false}
       />
 
 
@@ -1102,31 +1098,16 @@ function MultiPassRenderer({ rendererRef, cameraRef, mainSceneRef, overlaySceneR
 // ————————————
 // 1) Camera that sits at (0,0,0) and always looks at `target`
 // ————————————
-function LockCamera({ target, scPos }) {
+function LockCamera({ target }) {
   const { camera } = useThree();
-
-  // Reusable Vector3 so we don’t allocate every frame
-  const camPos = React.useMemo(
-    () => new THREE.Vector3(scPos[0], scPos[1], scPos[2]),
-    [scPos]
-  );
-
   useFrame(() => {
-    // 1) move camera to spacecraft
-    camera.position.copy(camPos);
-
-    // 2) make “up” be +Z
-    camera.up.set(0, 0, 1);
-
-    // 3) look at Europa’s world coords
-    camera.lookAt(target.x, target.y, target.z);
-
-    // 4) push the update through to the scene graph
-    camera.updateMatrixWorld();
+    camera.position.set(0, 0, 0);
+    camera.lookAt(target);
+    camera.updateProjectionMatrix();
   });
-
   return null;
 }
+
 
 // ————————————
 // 2) SecondaryView: identical scene, locked camera
@@ -1134,6 +1115,7 @@ function LockCamera({ target, scPos }) {
 function SecondaryView(props) {
   const { bodies, scPos } = props;
   const target = React.useMemo(() => {
+    // lookVec logic goes here; for now, point at Europa:
     const europaPos = getWorldPos("Europa", bodies, scPos);
     return europaPos
       ? new THREE.Vector3(europaPos.x, europaPos.y, europaPos.z)
@@ -1154,7 +1136,7 @@ function SecondaryView(props) {
         toneMappingExposure:  1.0,
       }}
     >
-      <LockCamera target={target} scPos={scPos} />
+      <LockCamera target={target} />
       {/* pass exactly the same scene-props you give MainScene in your primary view: */}
       <MainScene {...props} />
     </Canvas>
