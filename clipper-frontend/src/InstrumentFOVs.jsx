@@ -126,7 +126,7 @@ function degToRad(deg) {
   return (deg * Math.PI) / 180;
 }
 
-export function InstrumentFOVsAtNearPlane(fov) {
+export function InstrumentFOVsAtNearPlane({ fov, scQuat }) {
   const { camera } = useThree();
   const groupRef = useRef();
 
@@ -135,11 +135,38 @@ export function InstrumentFOVsAtNearPlane(fov) {
   }, [fov]);
 
   useFrame(() => {
-    if (groupRef.current) {
-      groupRef.current.position.copy(camera.position);
-      groupRef.current.quaternion.copy(camera.quaternion);
-    }
+    if (!groupRef.current) return;
+
+    const group = groupRef.current;
+
+    // Step 1: Position FOVs at the camera
+    group.position.copy(camera.position);
+
+    // Step 2: Determine SC roll relative to camera forward
+    const q = new THREE.Quaternion(...scQuat);
+
+    // SC +Z axis in world frame (was camera.up before)
+    const scZ = new THREE.Vector3(0, 0, 1).applyQuaternion(q);
+
+    // World forward (camera direction)
+    const viewDir = new THREE.Vector3();
+    camera.getWorldDirection(viewDir).normalize();
+
+    // Compute right vector = viewDir × scZ
+    const right = new THREE.Vector3().crossVectors(viewDir, scZ).normalize();
+
+    // New up = right × viewDir
+    const fovUp = new THREE.Vector3().crossVectors(right, viewDir).normalize();
+
+    // Build a rotation that aligns camera-facing quad with this up vector
+    const rotMatrix = new THREE.Matrix4().lookAt(
+      new THREE.Vector3(0, 0, 0),         // forward
+      viewDir,                            // where to "look"
+      fovUp                               // what to treat as "up"
+    );
+    group.setRotationFromMatrix(rotMatrix);
   });
+
 
   const meshes = useMemo(() => {
     const z = -1e-11;

@@ -408,6 +408,15 @@ export default function App() {
      .copy(ctrl.object.position)
      .sub(ctrl.target);
   }
+const makeQuatFromAxisAngle = (axis, degrees) => {
+  const rad = THREE.MathUtils.degToRad(degrees);
+  const q = new THREE.Quaternion().setFromAxisAngle(axis.normalize(), rad);
+  return [q.x, q.y, q.z, q.w];
+};
+
+// Example: rotate 45° clockwise around +Z (screen "forward")
+const fakePrimaryQuat = makeQuatFromAxisAngle(new THREE.Vector3(1, 0, 0), -90);
+
   // 🔁 Update camera FOV reactively
   function CameraFOVUpdater({ fov }) {
     const { camera } = useThree();
@@ -665,7 +674,7 @@ export default function App() {
     />
     <span className="ml-2">Show FOV overlays (primary)</span>
   </label>
-        
+
         <label htmlFor="fov-slider" className="block mb-1">
           Primary View FOV: {secondaryFOV}°
         </label>
@@ -739,7 +748,7 @@ export default function App() {
                 overlaySceneRef={overlaySceneRef}
                 isPrimaryScene={true}
               />
-              {showPrimaryFOVs && <InstrumentFOVsAtNearPlane fov={primaryFOV} />}
+              {showPrimaryFOVs && <InstrumentFOVsAtNearPlane fov={primaryFOV} scQuat={fakePrimaryQuat} />}
               <MultiPassRenderer
                 rendererRef={rendererRef}
                 cameraRef={cameraRef}
@@ -1186,35 +1195,42 @@ function LockCamera({ target, scPos, scQuat = [0,0,0,1] }) {
   const _worldNadir = React.useMemo(() => new THREE.Vector3(), []);
   const _quat = React.useMemo(() => new THREE.Quaternion(), []);
 
-  useFrame(() => {
-    camera.position.copy(_pos);
+useFrame(() => {
+  camera.position.copy(_pos);              // position = SC pos
+  camera.up.set(0, 0, 1);                  // world-up
+  camera.lookAt(target);                   // always face Europa
+  camera.updateMatrixWorld();
+});
 
-    const [qx, qy, qz, qw] = scQuat;
-    const isPointingAvail = !(qx === 0 && qy === 0 && qz === 0 && qw === 1);
+  // useFrame(() => {
+  //   camera.position.copy(_pos);
 
-    if (isPointingAvail) {
-      _quat.set(qx, qy, qz, qw).invert(); // SC-to-world
+  //   const [qx, qy, qz, qw] = scQuat;
+  //   const isPointingAvail = !(qx === 0 && qy === 0 && qz === 0 && qw === 1);
 
-      // — up vector is the SC's +Z axis in world frame (ram direction) —
-      const scZ = new THREE.Vector3(0, 0, 1).applyQuaternion(_quat);
-      camera.up.copy(scZ);
+  //   if (isPointingAvail) {
+  //     _quat.set(qx, qy, qz, qw).invert(); // SC-to-world
 
-      // — boresight is SC's +Y in world frame —
-      _worldNadir.set(0, 1, 0).applyQuaternion(_quat);
+  //     // — up vector is the SC's +Z axis in world frame (ram direction) —
+  //     const scZ = new THREE.Vector3(0, 0, 1).applyQuaternion(_quat);
+  //     camera.up.copy(scZ);
 
-      camera.lookAt(
-        camera.position.x + _worldNadir.x,
-        camera.position.y + _worldNadir.y,
-        camera.position.z + _worldNadir.z
-      );
-    } else {
-      // fallback look at Europa
-      camera.up.set(0, 0, 1);
-      camera.lookAt(target.x, target.y, target.z);
-    }
+  //     // — boresight is SC's +Y in world frame —
+  //     _worldNadir.set(0, 1, 0).applyQuaternion(_quat);
 
-    camera.updateMatrixWorld();
-  });
+  //     camera.lookAt(
+  //       camera.position.x + _worldNadir.x,
+  //       camera.position.y + _worldNadir.y,
+  //       camera.position.z + _worldNadir.z
+  //     );
+  //   } else {
+  //     // fallback look at Europa
+  //     camera.up.set(0, 0, 1);
+  //     camera.lookAt(target.x, target.y, target.z);
+  //   }
+
+  //   camera.updateMatrixWorld();
+  // });
 
   return null;
 }
@@ -1261,7 +1277,7 @@ function SecondaryView(props) {
       {/* pass exactly the same scene-props you give MainScene in your primary view: */}
       <MainScene {...props} />
       <CameraFOVUpdater fov={fov} />
-      <InstrumentFOVsAtNearPlane fov={fov}/>
+      <InstrumentFOVsAtNearPlane fov={fov} scQuat={scQuat}/>
       {overlaySceneRef.current && <primitive object={overlaySceneRef.current} />}
 
     </Canvas>
