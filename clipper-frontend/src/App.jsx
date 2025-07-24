@@ -719,7 +719,6 @@ function Scene({
     saQuat, 
     bodyStates, 
     showLatLon, 
-    showGeoMaps, 
     overlaySceneRef 
   }) {
   // only continue once we have what we need
@@ -769,11 +768,10 @@ function Scene({
           radiiKm={radiiKm?.[b.name]}
           color={colorMap[b.name]}
           levels={[[256,0.005],[128,0.1],[64,1],[32,200]]}
-          showGeoMaps={showGeoMaps}
         />
       );
     }),
-    [bodies, showLatLon, showGeoMaps]
+    [bodies, showLatLon]
   );
 
   const latLonMeshes= useMemo(() =>

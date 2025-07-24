@@ -62,10 +62,12 @@ function useTextureWithFallback(name, showGeoMaps) {
       loader.load(
         url,
         tex => {
-          if (!cancelled) setTexture(tex)
+         // ensure the PNG/JPG comes in as sRGB, so colors don’t get washed out
+         tex.encoding = THREE.sRGBEncoding;
+         if (!cancelled) setTexture(tex);
         },
         undefined,
-        () => tryNext(idx + 1)  // onError → next attempt
+        () => tryNext(idx + 1)
       )
     }
 
@@ -107,20 +109,22 @@ export function LODSphere({
       const geom = new THREE.SphereGeometry(1, segments, segments)
 
       // Base material opts
-      const matOpts = { color }
+      const matOpts = {}
 
-      if (texture && !isSun) {
+      if (texture) {
         // apply texture for non-sun bodies
         matOpts.map = texture
-        delete matOpts.color
+        matOpts.metalness=0
+        matOpts.roughness=1,      // maximum roughness → zero specular
+        matOpts.toneMapped=true // let the renderer tone-map it normally
       }
 
       if (isSun) {
         // special emissive Sun
-        matOpts.emissive = color
-        matOpts.emissiveIntensity = 1.5
+        matOpts.emissive = 'white';
+        matOpts.emissiveMap = texture; 
+        matOpts.emissiveIntensity = 1
         matOpts.toneMapped = false
-        delete matOpts.color
       }
 
       const mat = new THREE.MeshStandardMaterial(matOpts)
