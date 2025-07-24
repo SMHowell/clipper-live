@@ -18,7 +18,7 @@ import { BodySphere, ClipperModel, LatLonOverlay } from './geometryFunctions.jsx
 import OrbitLine from './geometryFunctions.jsx';
 import { getWorldPos } from "./getWorldPos.jsx";
 import MainScene from './MainScene';
-import {InstrumentFOVsAtNearPlane} from "./InstrumentFOVs";
+import {InstrumentFOVsAtNearPlane, PrimaryInstrumentFOVsAtNearPlane} from "./InstrumentFOVs";
 
 import {
   KM_PER_AU,
@@ -408,14 +408,33 @@ export default function App() {
      .copy(ctrl.object.position)
      .sub(ctrl.target);
   }
-const makeQuatFromAxisAngle = (axis, degrees) => {
-  const rad = THREE.MathUtils.degToRad(degrees);
-  const q = new THREE.Quaternion().setFromAxisAngle(axis.normalize(), rad);
-  return [q.x, q.y, q.z, q.w];
-};
 
-// Example: rotate 45° clockwise around +Z (screen "forward")
-const fakePrimaryQuat = makeQuatFromAxisAngle(new THREE.Vector3(1, 0, 0), -90);
+  const makeRolledQuat = (baseQuatArray, rollDegrees) => {
+    // 1. Convert array to THREE.Quaternion
+    const baseQ = new THREE.Quaternion(...baseQuatArray);
+
+    // 2. Get "look direction" from base quaternion (+Y in SC frame)
+    const lookDir = new THREE.Vector3(0, 1, 0).applyQuaternion(baseQ).normalize();
+
+    // 3. Make roll quaternion
+    const rollRad = THREE.MathUtils.degToRad(rollDegrees);
+    const rollQ = new THREE.Quaternion().setFromAxisAngle(lookDir, rollRad);
+
+    // 4. Apply roll to base orientation
+    const finalQ = baseQ.clone().multiply(rollQ); // roll after base
+
+    return [finalQ.x, finalQ.y, finalQ.z, finalQ.w];
+  };
+
+  const makeQuatFromAxisAngle = (axis, degrees) => {
+    const rad = THREE.MathUtils.degToRad(degrees);
+    const q = new THREE.Quaternion().setFromAxisAngle(axis.normalize(), rad);
+    return [q.x, q.y, q.z, q.w];
+  };
+
+  const baseQuat = makeQuatFromAxisAngle(new THREE.Vector3(1, 0, 0), -90);
+  // Example: rotate 45° clockwise around +Z (screen "forward")
+  const fakePrimaryQuat = makeRolledQuat(baseQuat, 0);
 
   // 🔁 Update camera FOV reactively
   function CameraFOVUpdater({ fov }) {
@@ -748,7 +767,13 @@ const fakePrimaryQuat = makeQuatFromAxisAngle(new THREE.Vector3(1, 0, 0), -90);
                 overlaySceneRef={overlaySceneRef}
                 isPrimaryScene={true}
               />
-              {showPrimaryFOVs && <InstrumentFOVsAtNearPlane fov={primaryFOV} scQuat={fakePrimaryQuat} />}
+              {showPrimaryFOVs && (
+                <PrimaryInstrumentFOVsAtNearPlane
+                  fov={primaryFOV}
+                  rollDegrees={90}  // set your desired roll here
+                />
+              )}
+
               <MultiPassRenderer
                 rendererRef={rendererRef}
                 cameraRef={cameraRef}
@@ -1277,7 +1302,10 @@ function SecondaryView(props) {
       {/* pass exactly the same scene-props you give MainScene in your primary view: */}
       <MainScene {...props} />
       <CameraFOVUpdater fov={fov} />
-      <InstrumentFOVsAtNearPlane fov={fov} scQuat={scQuat}/>
+      <InstrumentFOVsAtNearPlane
+        fov={fov}
+        scQuat={scQuat}
+      />
       {overlaySceneRef.current && <primitive object={overlaySceneRef.current} />}
 
     </Canvas>
