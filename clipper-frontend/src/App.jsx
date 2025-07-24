@@ -719,7 +719,8 @@ function Scene({
     saQuat, 
     bodyStates, 
     showLatLon, 
-    overlaySceneRef 
+    overlaySceneRef,
+    showGeoMaps
   }) {
   // only continue once we have what we need
   const ready =
@@ -768,10 +769,11 @@ function Scene({
           radiiKm={radiiKm?.[b.name]}
           color={colorMap[b.name]}
           levels={[[256,0.005],[128,0.1],[64,1],[32,200]]}
+          showGeoMaps={showGeoMaps}
         />
       );
     }),
-    [bodies, showLatLon]
+    [bodies, showLatLon, showGeoMaps]
   );
 
   const latLonMeshes= useMemo(() =>
@@ -883,11 +885,11 @@ function Scene({
     <>
 
       <EffectComposer>
-        <Bloom luminanceThreshold={1} height={300} />
+        <Bloom luminanceThreshold={0.1} height={300} />
       </EffectComposer>
 
       {/* Lights */}
-      <ambientLight intensity={0.1} />
+      {/*<ambientLight intensity={0.1} />*/}
 
       {/* Trajectory */}
 {/*      {trajectory?.length > 0 && (
